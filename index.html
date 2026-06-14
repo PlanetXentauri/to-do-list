@@ -80,10 +80,48 @@
     background: var(--panel); color: var(--text-dim);
     border: 1px solid var(--panel-border); border-radius: 999px;
     padding: 7px 14px; font-size: 13px; white-space: nowrap;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
   }
-  nav.tabs button.active {
-    background: rgba(99,102,241,0.18); color: var(--text);
-    border-color: rgba(99,102,241,0.45);
+  /* Colored tabs — each has its own hue */
+  nav.tabs button.tab-today {
+    color: #a5b4fc; border-color: rgba(99,102,241,0.30);
+    background: rgba(99,102,241,0.06);
+  }
+  nav.tabs button.tab-today.active {
+    color: #e0e7ff; background: rgba(99,102,241,0.28);
+    border-color: rgba(99,102,241,0.7);
+    box-shadow: 0 0 0 1px rgba(99,102,241,0.25);
+  }
+  nav.tabs button.tab-upcoming {
+    color: #facc15; border-color: rgba(212,165,93,0.35);
+    background: rgba(212,165,93,0.06);
+  }
+  nav.tabs button.tab-upcoming.active {
+    color: #fde68a; background: rgba(212,165,93,0.28);
+    border-color: rgba(212,165,93,0.75);
+    box-shadow: 0 0 0 1px rgba(212,165,93,0.25);
+  }
+  nav.tabs button.tab-all {
+    color: #c4b5fd; border-color: rgba(139,92,246,0.35);
+    background: rgba(139,92,246,0.06);
+  }
+  nav.tabs button.tab-all.active {
+    color: #ede9fe; background: rgba(139,92,246,0.28);
+    border-color: rgba(139,92,246,0.75);
+    box-shadow: 0 0 0 1px rgba(139,92,246,0.25);
+  }
+  nav.tabs button.tab-done {
+    color: #86efac; border-color: rgba(74,222,128,0.35);
+    background: rgba(74,222,128,0.06);
+  }
+  nav.tabs button.tab-done.active {
+    color: #dcfce7; background: rgba(74,222,128,0.28);
+    border-color: rgba(74,222,128,0.75);
+    box-shadow: 0 0 0 1px rgba(74,222,128,0.25);
+  }
+  nav.tabs button.tab-settings.active {
+    color: var(--text); background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.25);
   }
 
   /* Quick add */
@@ -300,11 +338,11 @@
   </div>
 
   <nav class="tabs" id="tabs">
-    <button class="active" data-filter="today">Today</button>
-    <button data-filter="upcoming">Upcoming</button>
-    <button data-filter="all">All open</button>
-    <button data-filter="done">Done</button>
-    <button data-filter="settings">⚙️ Settings</button>
+    <button class="tab-today active" data-filter="today">☀️ Today</button>
+    <button class="tab-upcoming" data-filter="upcoming">📆 Upcoming</button>
+    <button class="tab-all" data-filter="all">🌌 All</button>
+    <button class="tab-done" data-filter="done">✅ Done</button>
+    <button class="tab-settings" data-filter="settings">⚙️ Settings</button>
   </nav>
 
   <div class="quick-add" id="quick-add">
