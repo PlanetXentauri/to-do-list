@@ -287,7 +287,20 @@
   }
   .cat-row:last-child { border-bottom: none; }
   .cat-row input { flex: 1; padding: 8px 10px; font-size: 13px; }
-  .cat-emoji-input { max-width: 60px; text-align: center; }
+  .cat-emoji-input { max-width: 60px; text-align: center; flex: 0 0 60px; }
+  .cat-parent-select {
+    flex: 0 1 180px; max-width: 180px; padding: 7px 8px; font-size: 12px;
+    background: var(--panel-2); border: 1px solid var(--panel-border);
+    border-radius: 8px; color: var(--text-dim);
+  }
+  .cat-parent-select:focus { color: var(--text); border-color: var(--accent-1); }
+  .nest-indicator {
+    color: var(--text-faint); font-size: 14px; margin-right: -2px;
+    user-select: none;
+  }
+  @media (max-width: 540px) {
+    .cat-parent-select { flex-basis: 110px; max-width: 110px; }
+  }
 
   /* Toast */
   .toast {
@@ -606,8 +619,8 @@ function taskHtml(t) {
     else if (t.deadline === today) deadlineCls = "deadline-warning";
     else if (t.deadline <= addDaysISO(7)) deadlineCls = "deadline-soon";
   }
-  const cat = categories.find(c => c.name === t.category);
-  const catLabel = cat ? `${cat.emoji} ${cat.name}` : (t.category || "");
+  const cat = getCatByName(t.category);
+  const catLabel = cat ? categoryBreadcrumb(cat) : (t.category || "");
   const subOpen = (t.subtasks || []).filter(s => !s.done).length;
   const subTotal = (t.subtasks || []).length;
   const fileCount = (t.files || []).length;
@@ -634,9 +647,11 @@ function taskHtml(t) {
 }
 
 function detailsHtml(t) {
-  const catOptions = categories.map(c =>
-    `<option value="${escapeHtml(c.name)}" ${c.name === t.category ? "selected" : ""}>${c.emoji} ${escapeHtml(c.name)}</option>`
-  ).join("");
+  const catOptions = sortedCategoriesTree().map(c => {
+    const depth = categoryDepth(c);
+    const prefix = depth ? ("  ".repeat(depth) + "↳ ") : "";
+    return `<option value="${escapeHtml(c.name)}" ${c.name === t.category ? "selected" : ""}>${prefix}${c.emoji || ""} ${escapeHtml(c.name)}</option>`;
+  }).join("");
   const prioOptions = ["P1","P2","P3"].map(p =>
     `<option value="${p}" ${p === (t.priority||"P3") ? "selected" : ""}>${p}</option>`
   ).join("");
@@ -815,18 +830,37 @@ function bindTaskEvents(t) {
 
 function renderSettings() {
   const root = $("#settings-view");
-  const catsHtml = categories.map((c, i) => `
-    <div class="cat-row" data-cat-id="${c.id}">
-      <input class="cat-emoji-input" type="text" value="${escapeHtml(c.emoji || "")}" data-cat-action="emoji" maxlength="4" />
-      <input type="text" value="${escapeHtml(c.name)}" data-cat-action="name" />
-      <button class="icon-btn danger" data-cat-action="delete">×</button>
-    </div>
-  `).join("");
+  const tree = sortedCategoriesTree();
+  const catsHtml = tree.map(c => {
+    const depth = categoryDepth(c);
+    const indent = depth * 22;
+    const descendants = getDescendants(c.id);
+    descendants.add(c.id);
+    const parentOpts = ['<option value="">— top level —</option>']
+      .concat(categories
+        .filter(p => !descendants.has(p.id))
+        .sort((a, b) => categoryBreadcrumb(a).localeCompare(categoryBreadcrumb(b)))
+        .map(p => `<option value="${p.id}" ${c.parentId === p.id ? 'selected' : ''}>${escapeHtml(categoryBreadcrumb(p))}</option>`))
+      .join('');
+    const indicator = depth ? `<span class="nest-indicator">↳</span>` : "";
+    return `
+      <div class="cat-row" data-cat-id="${c.id}" style="margin-left:${indent}px">
+        ${indicator}
+        <input class="cat-emoji-input" type="text" value="${escapeHtml(c.emoji || "")}" data-cat-action="emoji" maxlength="4" />
+        <input type="text" value="${escapeHtml(c.name)}" data-cat-action="name" />
+        <select data-cat-action="parent" class="cat-parent-select" title="Parent category">${parentOpts}</select>
+        <button class="icon-btn danger" data-cat-action="delete">×</button>
+      </div>
+    `;
+  }).join("");
   root.innerHTML = `
     <div class="settings-section">
       <h2>Categories</h2>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">
+        Pick a parent to nest a category. Set to <em>top level</em> to unnest.
+      </div>
       ${catsHtml}
-      <div class="cat-row" style="border-top:1px solid var(--panel-border);margin-top:8px;padding-top:12px">
+      <div class="cat-row" style="border-top:1px solid var(--panel-border);margin-top:10px;padding-top:14px">
         <input class="cat-emoji-input" type="text" placeholder="📁" id="new-cat-emoji" maxlength="4" />
         <input type="text" placeholder="New category name" id="new-cat-name" />
         <button class="btn primary" id="add-cat-btn">Add</button>
@@ -835,7 +869,7 @@ function renderSettings() {
     <div class="settings-section">
       <h2>About</h2>
       <p style="margin:0;color:var(--text-dim);font-size:13px;line-height:1.6">
-        Data lives in Firebase Firestore. Files live in Firebase Storage. Sync is real-time across all devices. Open this URL on any phone or computer to see the same list.
+        Data lives in Firebase Firestore. File attachments use <code style="background:var(--panel-2);padding:1px 5px;border-radius:3px">obsidian://</code> deep-links. Sync is real-time across all devices. Open this URL on any phone or computer to see the same list. Categories can be nested — set a parent above to make one a sub-category of another.
       </p>
     </div>
   `;
@@ -846,8 +880,15 @@ function renderSettings() {
       const action = el.dataset.catAction;
       if (action === "emoji") el.onchange = () => updateDoc(doc(db, "categories", id), { emoji: el.value });
       if (action === "name") el.onchange = () => updateDoc(doc(db, "categories", id), { name: el.value });
+      if (action === "parent") el.onchange = () => updateDoc(doc(db, "categories", id), { parentId: el.value || null });
       if (action === "delete") el.onclick = async () => {
-        if (!confirm(`Delete category "${cat.name}"?`)) return;
+        const kidCount = categories.filter(k => k.parentId === id).length;
+        const warn = kidCount ? `\n\n⚠ This category has ${kidCount} sub-categor${kidCount === 1 ? 'y' : 'ies'} — they'll become top-level if you continue.` : "";
+        if (!confirm(`Delete category "${cat.name}"?${warn}`)) return;
+        // Promote children to top-level
+        for (const k of categories.filter(k => k.parentId === id)) {
+          await updateDoc(doc(db, "categories", k.id), { parentId: null });
+        }
         await deleteDoc(doc(db, "categories", id));
       };
     });
@@ -856,7 +897,7 @@ function renderSettings() {
     const emoji = $("#new-cat-emoji").value.trim() || "📁";
     const name = $("#new-cat-name").value.trim();
     if (!name) return toast("Name required", true);
-    await addDoc(collection(db, "categories"), { name, emoji });
+    await addDoc(collection(db, "categories"), { name, emoji, parentId: null });
     $("#new-cat-name").value = ""; $("#new-cat-emoji").value = "";
   };
 }
@@ -865,6 +906,47 @@ function escapeHtml(s) {
   return String(s || "").replace(/[&<>"']/g, c => ({
     "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
   }[c]));
+}
+
+// ----- Category tree helpers -----
+function getCatById(id) { return categories.find(c => c.id === id); }
+function getCatByName(name) { return categories.find(c => c.name === name); }
+function categoryPath(cat) {
+  // Returns chain from root → leaf as array of category objects
+  const path = []; let cur = cat; let guard = 0;
+  while (cur && guard++ < 12) {
+    path.unshift(cur);
+    cur = cur.parentId ? getCatById(cur.parentId) : null;
+  }
+  return path;
+}
+function categoryDepth(cat) { return Math.max(0, categoryPath(cat).length - 1); }
+function getDescendants(catId) {
+  const result = new Set(); const queue = [catId];
+  while (queue.length) {
+    const id = queue.shift();
+    for (const c of categories) if (c.parentId === id && !result.has(c.id)) {
+      result.add(c.id); queue.push(c.id);
+    }
+  }
+  return result;
+}
+function sortedCategoriesTree() {
+  // Returns categories in tree order: each parent immediately followed by its children
+  const result = [];
+  function walk(parentId) {
+    const children = categories
+      .filter(c => (c.parentId || null) === (parentId || null))
+      .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    for (const child of children) { result.push(child); walk(child.id); }
+  }
+  walk(null);
+  // Append any orphans whose parentId points at a missing category
+  for (const c of categories) if (!result.includes(c)) result.push(c);
+  return result;
+}
+function categoryBreadcrumb(cat, sep = " / ") {
+  return categoryPath(cat).map(p => `${p.emoji || ""} ${p.name}`.trim()).join(sep);
 }
 
 // ----- Tabs + quick add -----
