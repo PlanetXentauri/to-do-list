@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0d12" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="To-Do" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<title>To-Do List</title>
+<style>
+  :root {
+    --bg-grad-start: #0b0d12;
+    --bg-grad-end: #131726;
+    --panel: #161922;
+    --panel-2: #1c2030;
+    --panel-border: #262b3a;
+    --text: #e8eaf0;
+    --text-dim: #8b91a3;
+    --text-faint: #565a6b;
+    --accent-1: #6366f1;
+    --accent-2: #8b5cf6;
+    --prio-1: #C97064;
+    --prio-2: #D4A55D;
+    --prio-3: #7DA87D;
+    --danger: #ef4444;
+    --success: #4ade80;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    background: linear-gradient(135deg, var(--bg-grad-start) 0%, var(--bg-grad-end) 100%);
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.45;
+    padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  button, input, textarea, select {
+    font-family: inherit; font-size: inherit; color: inherit;
+  }
+  button { cursor: pointer; }
+  input, textarea, select {
+    background: var(--panel-2); border: 1px solid var(--panel-border);
+    border-radius: 10px; padding: 10px 12px; color: var(--text);
+    outline: none; transition: border-color 0.15s;
+    width: 100%;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent-1); }
+  textarea { min-height: 70px; resize: vertical; }
+
+  /* Layout */
+  .container { max-width: 760px; margin: 0 auto; padding: 16px 14px 100px; }
+  header.app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 14px;
+  }
+  h1 {
+    margin: 0; font-size: 24px; letter-spacing: -0.01em;
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sync-status {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--text-dim);
+  }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-faint); }
+  .sync-dot.connected { background: var(--success); }
+  .sync-dot.error { background: var(--danger); }
+
+  /* Tabs */
+  nav.tabs {
+    display: flex; gap: 4px; margin-bottom: 14px; overflow-x: auto;
+    -webkit-overflow-scrolling: touch; padding-bottom: 4px;
+  }
+  nav.tabs button {
+    background: var(--panel); color: var(--text-dim);
+    border: 1px solid var(--panel-border); border-radius: 999px;
+    padding: 7px 14px; font-size: 13px; white-space: nowrap;
+  }
+  nav.tabs button.active {
+    background: rgba(99,102,241,0.18); color: var(--text);
+    border-color: rgba(99,102,241,0.45);
+  }
+
+  /* Quick add */
+  .quick-add {
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 14px; padding: 12px; margin-bottom: 16px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .quick-add input { flex: 1; }
+  .quick-add button.primary {
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+    border: none; color: white; font-weight: 600;
+    padding: 11px 16px; border-radius: 10px; white-space: nowrap;
+  }
+  .quick-add button.primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Task card */
+  .task {
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+  .task.done { opacity: 0.55; }
+  .task.expanded { border-color: rgba(99,102,241,0.35); }
+  .task-head { display: flex; align-items: flex-start; gap: 12px; }
+  .check-btn {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid var(--text-dim); background: transparent;
+    padding: 0; display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+  .check-btn.done { background: var(--success); border-color: var(--success); }
+  .check-btn.done::after { content: "✓"; color: #0b0d12; font-weight: bold; font-size: 13px; }
+  .task-body { flex: 1; min-width: 0; }
+  .task-title {
+    font-size: 15px; color: var(--text); cursor: pointer;
+    word-break: break-word;
+  }
+  .task-title.done { text-decoration: line-through; color: var(--text-dim); }
+  .task-meta {
+    font-size: 12px; color: var(--text-dim); margin-top: 4px;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  }
+  .chip {
+    padding: 2px 8px; border-radius: 999px; font-size: 11px;
+    background: rgba(255,255,255,0.06); color: var(--text-dim);
+  }
+  .badge {
+    flex-shrink: 0; padding: 3px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; color: #1a1a1a;
+  }
+  .badge.p1 { background: var(--prio-1); }
+  .badge.p2 { background: var(--prio-2); }
+  .badge.p3 { background: var(--prio-3); }
+  .deadline-warning { color: var(--prio-1); font-weight: 600; }
+  .deadline-soon { color: var(--prio-2); font-weight: 600; }
+  .meta-icons { display: flex; gap: 8px; color: var(--text-faint); font-size: 11px; }
+
+  /* Expanded task details */
+  .task-details {
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--panel-border);
+    display: none; flex-direction: column; gap: 12px;
+  }
+  .task.expanded .task-details { display: flex; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label {
+    font-size: 11px; color: var(--text-dim); text-transform: uppercase;
+    letter-spacing: 0.06em; font-weight: 600;
+  }
+  .field-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .field-row > div { flex: 1; min-width: 120px; }
+
+  /* Subtasks */
+  .subtask-list { display: flex; flex-direction: column; gap: 4px; }
+  .subtask {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 0;
+  }
+  .subtask input[type="text"] { flex: 1; padding: 6px 10px; font-size: 13px; }
+  .subtask-check {
+    width: 16px; height: 16px; flex-shrink: 0; border-radius: 4px;
+    border: 1.5px solid var(--text-dim); background: transparent;
+    padding: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .subtask-check.done { background: var(--success); border-color: var(--success); }
+  .subtask-check.done::after { content: "✓"; color: #0b0d12; font-size: 10px; font-weight: bold; }
+  .subtask.done input[type="text"] { color: var(--text-dim); text-decoration: line-through; }
+  .icon-btn {
+    background: transparent; border: none; color: var(--text-dim);
+    padding: 6px; border-radius: 6px;
+  }
+  .icon-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .icon-btn.danger:hover { color: var(--danger); }
+
+  /* Links */
+  .link-row { display: flex; gap: 6px; align-items: center; }
+  .link-row input { padding: 8px 10px; font-size: 13px; }
+  .link-row a {
+    color: var(--accent-1); font-size: 13px; word-break: break-all;
+    text-decoration: none;
+  }
+  .link-row a:hover { text-decoration: underline; }
+
+  /* Files */
+  .file-grid { display: flex; flex-direction: column; gap: 6px; }
+  .file-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+    background: var(--panel-2); border-radius: 8px; font-size: 13px;
+  }
+  .file-item .file-name { flex: 1; color: var(--text); word-break: break-all; }
+  .file-item .file-size { color: var(--text-faint); font-size: 11px; }
+  .file-drop {
+    border: 1.5px dashed var(--panel-border); border-radius: 10px;
+    padding: 14px; text-align: center; color: var(--text-dim);
+    font-size: 13px; cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .file-drop:hover, .file-drop.dragover {
+    border-color: var(--accent-1); background: rgba(99,102,241,0.05);
+  }
+  .file-drop input { display: none; }
+  .upload-progress {
+    background: var(--panel-2); border-radius: 6px; height: 4px; overflow: hidden;
+  }
+  .upload-progress-bar {
+    height: 100%; background: var(--accent-1); width: 0%; transition: width 0.2s;
+  }
+
+  /* Action buttons */
+  .action-row { display: flex; gap: 8px; justify-content: flex-end; }
+  .btn {
+    padding: 8px 14px; border-radius: 8px; font-size: 13px;
+    border: 1px solid var(--panel-border); background: var(--panel-2);
+    color: var(--text);
+  }
+  .btn:hover { border-color: var(--accent-1); }
+  .btn.danger { color: var(--danger); border-color: rgba(239,68,68,0.3); }
+  .btn.danger:hover { background: rgba(239,68,68,0.1); }
+  .btn.primary {
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+    border: none; color: white; font-weight: 600;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 40px 20px; color: var(--text-dim);
+  }
+  .empty-state .emoji { font-size: 36px; margin-bottom: 8px; }
+
+  /* Settings panel */
+  .settings-section {
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 14px; padding: 16px; margin-bottom: 14px;
+  }
+  .settings-section h2 {
+    margin: 0 0 12px; font-size: 14px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-dim);
+  }
+  .cat-row {
+    display: flex; align-items: center; gap: 8px; padding: 8px 0;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  .cat-row:last-child { border-bottom: none; }
+  .cat-row input { flex: 1; padding: 8px 10px; font-size: 13px; }
+  .cat-emoji-input { max-width: 60px; text-align: center; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 10px; padding: 10px 16px; font-size: 13px;
+    color: var(--text); z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none; opacity: 0;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+  .toast.error { border-color: rgba(239,68,68,0.5); }
+
+  /* Setup notice */
+  .setup-notice {
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 12px; padding: 14px; margin-bottom: 14px;
+    color: var(--text); font-size: 13px;
+  }
+  .setup-notice h3 { margin: 0 0 6px; color: var(--prio-1); font-size: 14px; }
+  .setup-notice code {
+    background: var(--panel-2); padding: 2px 6px; border-radius: 4px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 540px) {
+    h1 { font-size: 20px; }
+    .container { padding: 12px 10px 100px; }
+    .task { padding: 10px 12px; }
+    .quick-add { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="app-header">
+    <h1>📋 To-Do List</h1>
+    <div class="sync-status">
+      <span class="sync-dot" id="sync-dot"></span>
+      <span id="sync-text">connecting…</span>
+    </div>
+  </header>
+
+  <div id="setup-notice" class="setup-notice" style="display:none">
+    <h3>⚠️ Firebase not configured</h3>
+    <p style="margin:0">Open <code>index.html</code> and paste your Firebase project's config into the <code>firebaseConfig</code> object near the bottom of the file. See <code>SETUP.md</code> for the 5-minute walkthrough.</p>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="active" data-filter="today">Today</button>
+    <button data-filter="upcoming">Upcoming</button>
+    <button data-filter="all">All open</button>
+    <button data-filter="done">Done</button>
+    <button data-filter="settings">⚙️ Settings</button>
+  </nav>
+
+  <div class="quick-add" id="quick-add">
+    <input id="qa-title" type="text" placeholder="Add a task and press Enter…" />
+    <button class="primary" id="qa-add">Add</button>
+  </div>
+
+  <div id="task-list"></div>
+  <div id="settings-view" style="display:none"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ============================================================
+     FIREBASE CONFIG — paste your project's config below.
+     See SETUP.md for the 5-minute walkthrough.
+     ============================================================ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {
+  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy, serverTimestamp, setDoc, getDocs
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+// Firebase Storage removed — files are referenced via obsidian:// deep-links instead.
+
+// ⬇️ FIREBASE CONFIG ⬇️
+const firebaseConfig = {
+  apiKey: "AIzaSyBs8jZeW96DsumVVpK1mANVDvg6-LqUILg",
+  authDomain: "todo-107e0.firebaseapp.com",
+  projectId: "todo-107e0",
+  storageBucket: "todo-107e0.firebasestorage.app",
+  messagingSenderId: "1001442592988",
+  appId: "1:1001442592988:web:1c73371e2a069b4bbd8c19"
+};
+// ⬆️ END CONFIG ⬆️
+
+const FIREBASE_CONFIGURED = firebaseConfig.apiKey !== "PASTE_API_KEY_HERE";
+
+const DEFAULT_CATEGORIES = [
+  { name: "Work", emoji: "💼" },
+  { name: "Finance", emoji: "💰" },
+  { name: "Side Projects", emoji: "🚀" }
+];
+
+// ----- State -----
+let app, db;
+let tasks = [];
+let categories = [];
+let currentFilter = "today";
+let expandedId = null;
+
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+const todayISO = () => new Date().toISOString().slice(0, 10);
+const addDaysISO = (n) => {
+  const d = new Date(); d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+};
+const fmtDate = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(d)) return iso;
+  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+};
+const fmtSize = (b) => {
+  if (b < 1024) return b + " B";
+  if (b < 1024*1024) return (b/1024).toFixed(1) + " KB";
+  return (b/1024/1024).toFixed(1) + " MB";
+};
+
+function toast(msg, isError = false) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.toggle("error", isError);
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2400);
+}
+
+function setSyncStatus(state, text) {
+  const dot = $("#sync-dot");
+  dot.classList.remove("connected", "error");
+  if (state === "connected") dot.classList.add("connected");
+  if (state === "error") dot.classList.add("error");
+  $("#sync-text").textContent = text;
+}
+
+// ----- Firebase init -----
+if (FIREBASE_CONFIGURED) {
+  try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    setSyncStatus("connecting", "syncing…");
+    initSubscriptions();
+  } catch (e) {
+    console.error(e);
+    setSyncStatus("error", "config error");
+    toast("Firebase config error: " + e.message, true);
+  }
+} else {
+  $("#setup-notice").style.display = "block";
+  setSyncStatus("error", "not configured");
+}
+
+function initSubscriptions() {
+  // Categories
+  const catsRef = collection(db, "categories");
+  onSnapshot(catsRef, async (snap) => {
+    categories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (categories.length === 0) {
+      // First-time seed
+      for (const c of DEFAULT_CATEGORIES) {
+        await addDoc(catsRef, c);
+      }
+    }
+    render();
+  }, (err) => {
+    setSyncStatus("error", "sync error");
+    toast("Categories sync error: " + err.message, true);
+  });
+
+  // Tasks
+  const tasksRef = query(collection(db, "tasks"), orderBy("createdAt", "desc"));
+  onSnapshot(tasksRef, (snap) => {
+    tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    setSyncStatus("connected", "synced");
+    render();
+  }, (err) => {
+    setSyncStatus("error", "sync error");
+    toast("Tasks sync error: " + err.message, true);
+  });
+}
+
+// ----- Task CRUD -----
+async function addTask(title) {
+  if (!title.trim()) return;
+  if (!FIREBASE_CONFIGURED) return toast("Configure Firebase first", true);
+  try {
+    await addDoc(collection(db, "tasks"), {
+      title: title.trim(),
+      category: categories[0]?.name || "",
+      priority: "P3",
+      deadline: null,
+      status: "open",
+      notes: "",
+      links: [],
+      files: [],
+      subtasks: [],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+  } catch (e) {
+    toast("Add failed: " + e.message, true);
+  }
+}
+
+async function updateTask(id, patch) {
+  try {
+    await updateDoc(doc(db, "tasks", id), { ...patch, updatedAt: serverTimestamp() });
+  } catch (e) {
+    toast("Update failed: " + e.message, true);
+  }
+}
+
+async function deleteTask(t) {
+  if (!confirm(`Delete "${t.title}"?`)) return;
+  try {
+    await deleteDoc(doc(db, "tasks", t.id));
+    toast("Deleted");
+  } catch (e) {
+    toast("Delete failed: " + e.message, true);
+  }
+}
+
+async function toggleDone(t) {
+  await updateTask(t.id, { status: t.status === "done" ? "open" : "done" });
+}
+
+// ----- Obsidian file references -----
+// Files are not uploaded. Each entry stores a label + an obsidian:// URI or any URL
+// pointing at a file in the user's Obsidian vault.
+async function removeFile(t, fileIdx) {
+  const f = t.files[fileIdx];
+  if (!confirm(`Remove "${f.name || 'file reference'}"?`)) return;
+  const newFiles = t.files.filter((_, i) => i !== fileIdx);
+  await updateTask(t.id, { files: newFiles });
+}
+
+// ----- Filter -----
+function filterTasks() {
+  const today = todayISO();
+  const in7 = addDaysISO(7);
+  if (currentFilter === "today") {
+    return tasks.filter(t => t.status === "open" && (
+      (t.deadline && t.deadline <= today) ||
+      t.priority === "P1"
+    ));
+  }
+  if (currentFilter === "upcoming") {
+    return tasks.filter(t => t.status === "open" && t.deadline && t.deadline > today && t.deadline <= in7);
+  }
+  if (currentFilter === "all") {
+    return tasks.filter(t => t.status === "open");
+  }
+  if (currentFilter === "done") {
+    return tasks.filter(t => t.status === "done");
+  }
+  return tasks;
+}
+
+// ----- Render -----
+function render() {
+  if (currentFilter === "settings") {
+    $("#task-list").style.display = "none";
+    $("#quick-add").style.display = "none";
+    $("#settings-view").style.display = "block";
+    renderSettings();
+  } else {
+    $("#task-list").style.display = "block";
+    $("#quick-add").style.display = "flex";
+    $("#settings-view").style.display = "none";
+    renderTasks();
+  }
+}
+
+function renderTasks() {
+  const list = filterTasks();
+  const root = $("#task-list");
+  if (list.length === 0) {
+    const empty = {
+      today: { e: "✨", m: "Nothing for today. Add one above." },
+      upcoming: { e: "📅", m: "Nothing coming up in the next 7 days." },
+      all: { e: "🎉", m: "Inbox zero. Add a task above." },
+      done: { e: "📥", m: "No completed tasks yet." }
+    }[currentFilter];
+    root.innerHTML = `<div class="empty-state"><div class="emoji">${empty.e}</div><div>${empty.m}</div></div>`;
+    return;
+  }
+  // Sort: P1 first, then by deadline (no-deadline last)
+  const sorted = [...list].sort((a, b) => {
+    const pa = parseInt((a.priority||"P3").slice(1));
+    const pb = parseInt((b.priority||"P3").slice(1));
+    if (pa !== pb) return pa - pb;
+    if (!a.deadline) return 1;
+    if (!b.deadline) return -1;
+    return a.deadline.localeCompare(b.deadline);
+  });
+  root.innerHTML = sorted.map(taskHtml).join("");
+  // Re-bind events
+  sorted.forEach(t => bindTaskEvents(t));
+}
+
+function taskHtml(t) {
+  const isExpanded = expandedId === t.id;
+  const isDone = t.status === "done";
+  const today = todayISO();
+  const p = (t.priority || "P3").toLowerCase();
+  let deadlineCls = "";
+  if (t.deadline && !isDone) {
+    if (t.deadline < today) deadlineCls = "deadline-warning";
+    else if (t.deadline === today) deadlineCls = "deadline-warning";
+    else if (t.deadline <= addDaysISO(7)) deadlineCls = "deadline-soon";
+  }
+  const cat = categories.find(c => c.name === t.category);
+  const catLabel = cat ? `${cat.emoji} ${cat.name}` : (t.category || "");
+  const subOpen = (t.subtasks || []).filter(s => !s.done).length;
+  const subTotal = (t.subtasks || []).length;
+  const fileCount = (t.files || []).length;
+  const linkCount = (t.links || []).length;
+
+  return `
+  <div class="task ${isExpanded ? 'expanded' : ''} ${isDone ? 'done' : ''}" data-id="${t.id}">
+    <div class="task-head">
+      <button class="check-btn ${isDone ? 'done' : ''}" data-action="toggle-done"></button>
+      <div class="task-body">
+        <div class="task-title ${isDone ? 'done' : ''}" data-action="expand">${escapeHtml(t.title)}</div>
+        <div class="task-meta">
+          ${catLabel ? `<span class="chip">${escapeHtml(catLabel)}</span>` : ""}
+          ${t.deadline ? `<span class="${deadlineCls}">📅 ${fmtDate(t.deadline)}</span>` : ""}
+          ${subTotal ? `<span class="meta-icons">☑ ${subTotal - subOpen}/${subTotal}</span>` : ""}
+          ${linkCount ? `<span class="meta-icons">🔗 ${linkCount}</span>` : ""}
+          ${fileCount ? `<span class="meta-icons">📎 ${fileCount}</span>` : ""}
+        </div>
+      </div>
+      <span class="badge ${p}">${(t.priority||"P3")}</span>
+    </div>
+    ${isExpanded ? detailsHtml(t) : ""}
+  </div>`;
+}
+
+function detailsHtml(t) {
+  const catOptions = categories.map(c =>
+    `<option value="${escapeHtml(c.name)}" ${c.name === t.category ? "selected" : ""}>${c.emoji} ${escapeHtml(c.name)}</option>`
+  ).join("");
+  const prioOptions = ["P1","P2","P3"].map(p =>
+    `<option value="${p}" ${p === (t.priority||"P3") ? "selected" : ""}>${p}</option>`
+  ).join("");
+
+  const subtasksHtml = (t.subtasks || []).map((s, i) => `
+    <div class="subtask ${s.done ? 'done' : ''}" data-sub-idx="${i}">
+      <button class="subtask-check ${s.done ? 'done' : ''}" data-action="toggle-sub"></button>
+      <input type="text" value="${escapeHtml(s.title)}" data-action="edit-sub" />
+      <button class="icon-btn danger" data-action="del-sub">×</button>
+    </div>
+  `).join("");
+
+  const linksHtml = (t.links || []).map((l, i) => `
+    <div class="link-row" data-link-idx="${i}">
+      <input type="text" placeholder="Label" value="${escapeHtml(l.label || "")}" data-action="edit-link-label" />
+      <input type="url" placeholder="https://…" value="${escapeHtml(l.url || "")}" data-action="edit-link-url" />
+      ${l.url ? `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">↗</a>` : ""}
+      <button class="icon-btn danger" data-action="del-link">×</button>
+    </div>
+  `).join("");
+
+  const filesHtml = (t.files || []).map((f, i) => `
+    <div class="link-row" data-file-idx="${i}">
+      <input type="text" placeholder="Label (e.g. Receipt.pdf)" value="${escapeHtml(f.name || "")}" data-action="edit-file-name" />
+      <input type="text" placeholder="obsidian://open?vault=…&file=…" value="${escapeHtml(f.url || "")}" data-action="edit-file-url" />
+      ${f.url ? `<a href="${escapeHtml(f.url)}" target="_blank" rel="noopener">↗</a>` : ""}
+      <button class="icon-btn danger" data-action="del-file">×</button>
+    </div>
+  `).join("");
+
+  return `
+    <div class="task-details">
+      <div class="field-row">
+        <div class="field">
+          <label>Title</label>
+          <input type="text" value="${escapeHtml(t.title)}" data-action="edit-title" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Category</label>
+          <select data-action="edit-category">${catOptions}</select>
+        </div>
+        <div class="field">
+          <label>Priority</label>
+          <select data-action="edit-priority">${prioOptions}</select>
+        </div>
+        <div class="field">
+          <label>Deadline</label>
+          <input type="date" value="${t.deadline || ''}" data-action="edit-deadline" />
+        </div>
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea data-action="edit-notes" placeholder="Add notes…">${escapeHtml(t.notes || "")}</textarea>
+      </div>
+      <div class="field">
+        <label>Subtasks</label>
+        <div class="subtask-list">
+          ${subtasksHtml}
+          <div class="subtask">
+            <span style="width:16px"></span>
+            <input type="text" placeholder="Add a subtask + press Enter" data-action="add-sub" />
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Links</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${linksHtml}
+          <button class="btn" data-action="add-link">+ Add link</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Obsidian files</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${filesHtml}
+          <button class="btn" data-action="add-file">+ Add Obsidian file reference</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:4px">
+          Paste an <code style="background:var(--panel-2);padding:1px 4px;border-radius:3px">obsidian://open?vault=YourVault&file=path/to/file</code> URI. Click ↗ to open the file in Obsidian.
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn danger" data-action="delete">Delete</button>
+        <button class="btn primary" data-action="collapse">Done editing</button>
+      </div>
+    </div>
+  `;
+}
+
+function bindTaskEvents(t) {
+  const root = document.querySelector(`.task[data-id="${t.id}"]`);
+  if (!root) return;
+  root.querySelectorAll("[data-action]").forEach(el => {
+    const action = el.dataset.action;
+    if (action === "toggle-done") el.onclick = () => toggleDone(t);
+    if (action === "expand") el.onclick = () => { expandedId = expandedId === t.id ? null : t.id; render(); };
+    if (action === "collapse") el.onclick = () => { expandedId = null; render(); };
+    if (action === "delete") el.onclick = () => deleteTask(t);
+    if (action === "edit-title") el.onchange = () => updateTask(t.id, { title: el.value });
+    if (action === "edit-category") el.onchange = () => updateTask(t.id, { category: el.value });
+    if (action === "edit-priority") el.onchange = () => updateTask(t.id, { priority: el.value });
+    if (action === "edit-deadline") el.onchange = () => updateTask(t.id, { deadline: el.value || null });
+    if (action === "edit-notes") el.onblur = () => updateTask(t.id, { notes: el.value });
+
+    if (action === "toggle-sub") el.onclick = () => {
+      const idx = parseInt(el.closest("[data-sub-idx]").dataset.subIdx);
+      const subs = [...(t.subtasks || [])];
+      subs[idx] = { ...subs[idx], done: !subs[idx].done };
+      updateTask(t.id, { subtasks: subs });
+    };
+    if (action === "edit-sub") el.onchange = () => {
+      const idx = parseInt(el.closest("[data-sub-idx]").dataset.subIdx);
+      const subs = [...(t.subtasks || [])];
+      subs[idx] = { ...subs[idx], title: el.value };
+      updateTask(t.id, { subtasks: subs });
+    };
+    if (action === "del-sub") el.onclick = () => {
+      const idx = parseInt(el.closest("[data-sub-idx]").dataset.subIdx);
+      const subs = (t.subtasks || []).filter((_, i) => i !== idx);
+      updateTask(t.id, { subtasks: subs });
+    };
+    if (action === "add-sub") el.onkeydown = (e) => {
+      if (e.key === "Enter" && el.value.trim()) {
+        const subs = [...(t.subtasks || []), { title: el.value.trim(), done: false }];
+        updateTask(t.id, { subtasks: subs });
+        el.value = "";
+      }
+    };
+
+    if (action === "edit-link-label") el.onchange = () => {
+      const idx = parseInt(el.closest("[data-link-idx]").dataset.linkIdx);
+      const links = [...(t.links || [])];
+      links[idx] = { ...links[idx], label: el.value };
+      updateTask(t.id, { links });
+    };
+    if (action === "edit-link-url") el.onchange = () => {
+      const idx = parseInt(el.closest("[data-link-idx]").dataset.linkIdx);
+      const links = [...(t.links || [])];
+      links[idx] = { ...links[idx], url: el.value };
+      updateTask(t.id, { links });
+    };
+    if (action === "del-link") el.onclick = () => {
+      const idx = parseInt(el.closest("[data-link-idx]").dataset.linkIdx);
+      const links = (t.links || []).filter((_, i) => i !== idx);
+      updateTask(t.id, { links });
+    };
+    if (action === "add-link") el.onclick = () => {
+      const links = [...(t.links || []), { label: "", url: "" }];
+      updateTask(t.id, { links });
+    };
+
+    if (action === "edit-file-name") el.onchange = () => {
+      const idx = parseInt(el.closest("[data-file-idx]").dataset.fileIdx);
+      const files = [...(t.files || [])];
+      files[idx] = { ...files[idx], name: el.value };
+      updateTask(t.id, { files });
+    };
+    if (action === "edit-file-url") el.onchange = () => {
+      const idx = parseInt(el.closest("[data-file-idx]").dataset.fileIdx);
+      const files = [...(t.files || [])];
+      files[idx] = { ...files[idx], url: el.value };
+      updateTask(t.id, { files });
+    };
+    if (action === "del-file") el.onclick = () => {
+      const idx = parseInt(el.closest("[data-file-idx]").dataset.fileIdx);
+      removeFile(t, idx);
+    };
+    if (action === "add-file") el.onclick = () => {
+      const files = [...(t.files || []), { name: "", url: "" }];
+      updateTask(t.id, { files });
+    };
+  });
+}
+
+function renderSettings() {
+  const root = $("#settings-view");
+  const catsHtml = categories.map((c, i) => `
+    <div class="cat-row" data-cat-id="${c.id}">
+      <input class="cat-emoji-input" type="text" value="${escapeHtml(c.emoji || "")}" data-cat-action="emoji" maxlength="4" />
+      <input type="text" value="${escapeHtml(c.name)}" data-cat-action="name" />
+      <button class="icon-btn danger" data-cat-action="delete">×</button>
+    </div>
+  `).join("");
+  root.innerHTML = `
+    <div class="settings-section">
+      <h2>Categories</h2>
+      ${catsHtml}
+      <div class="cat-row" style="border-top:1px solid var(--panel-border);margin-top:8px;padding-top:12px">
+        <input class="cat-emoji-input" type="text" placeholder="📁" id="new-cat-emoji" maxlength="4" />
+        <input type="text" placeholder="New category name" id="new-cat-name" />
+        <button class="btn primary" id="add-cat-btn">Add</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h2>About</h2>
+      <p style="margin:0;color:var(--text-dim);font-size:13px;line-height:1.6">
+        Data lives in Firebase Firestore. Files live in Firebase Storage. Sync is real-time across all devices. Open this URL on any phone or computer to see the same list.
+      </p>
+    </div>
+  `;
+  root.querySelectorAll("[data-cat-id]").forEach(row => {
+    const id = row.dataset.catId;
+    const cat = categories.find(c => c.id === id);
+    row.querySelectorAll("[data-cat-action]").forEach(el => {
+      const action = el.dataset.catAction;
+      if (action === "emoji") el.onchange = () => updateDoc(doc(db, "categories", id), { emoji: el.value });
+      if (action === "name") el.onchange = () => updateDoc(doc(db, "categories", id), { name: el.value });
+      if (action === "delete") el.onclick = async () => {
+        if (!confirm(`Delete category "${cat.name}"?`)) return;
+        await deleteDoc(doc(db, "categories", id));
+      };
+    });
+  });
+  $("#add-cat-btn").onclick = async () => {
+    const emoji = $("#new-cat-emoji").value.trim() || "📁";
+    const name = $("#new-cat-name").value.trim();
+    if (!name) return toast("Name required", true);
+    await addDoc(collection(db, "categories"), { name, emoji });
+    $("#new-cat-name").value = ""; $("#new-cat-emoji").value = "";
+  };
+}
+
+function escapeHtml(s) {
+  return String(s || "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+// ----- Tabs + quick add -----
+$$("nav.tabs button").forEach(btn => {
+  btn.onclick = () => {
+    $$("nav.tabs button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.filter;
+    expandedId = null;
+    render();
+  };
+});
+
+$("#qa-add").onclick = () => { addTask($("#qa-title").value); $("#qa-title").value = ""; };
+$("#qa-title").onkeydown = (e) => { if (e.key === "Enter") $("#qa-add").click(); };
+
+// Initial render (empty state until data arrives)
+render();
+
+// Register service worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
