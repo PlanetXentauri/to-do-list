@@ -302,6 +302,110 @@
     .cat-parent-select { flex-basis: 110px; max-width: 110px; }
   }
 
+  /* ====== Mode switcher (To-Do / To-Pay) ====== */
+  .mode-switch {
+    display: flex; gap: 4px; padding: 4px;
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 999px; margin: 0 auto 14px;
+    width: fit-content;
+  }
+  .mode-btn {
+    background: transparent; color: var(--text-dim);
+    border: none; padding: 8px 18px; border-radius: 999px;
+    font-size: 13px; font-weight: 600;
+    transition: background 0.2s, color 0.2s, transform 0.1s;
+  }
+  .mode-btn:hover { color: var(--text); }
+  .mode-btn:active { transform: scale(0.97); }
+  .mode-btn.active {
+    color: white;
+    background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+  }
+
+  /* ====== Bills ====== */
+  .bill-summary {
+    background: rgba(99,102,241,0.07); border: 1px solid rgba(99,102,241,0.20);
+    border-radius: 12px; padding: 12px 14px; margin-bottom: 12px;
+    display: flex; gap: 18px; flex-wrap: wrap; font-size: 13px;
+    color: var(--text-dim);
+  }
+  .bill-summary strong {
+    color: var(--text); font-variant-numeric: tabular-nums; font-weight: 700;
+  }
+  .bill {
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+    transition: border-color 0.15s;
+  }
+  .bill.paid { opacity: 0.6; }
+  .bill.expanded { border-color: rgba(99,102,241,0.35); }
+  .bill-head {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .bill-logo {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--panel-2); flex-shrink: 0;
+    object-fit: contain; padding: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; overflow: hidden;
+  }
+  .bill-logo img { width: 100%; height: 100%; object-fit: contain; }
+  .bill-body { flex: 1; min-width: 0; cursor: pointer; }
+  .bill-title {
+    font-size: 15px; color: var(--text); font-weight: 600;
+    word-break: break-word;
+  }
+  .bill-meta {
+    font-size: 12px; color: var(--text-dim); margin-top: 3px;
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+  .bill-amount {
+    font-size: 16px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums; flex-shrink: 0;
+    text-align: right;
+  }
+  .bill-amount .freq {
+    font-size: 11px; color: var(--text-dim); font-weight: 500;
+    margin-left: 2px; display: block; margin-top: 1px;
+  }
+  .bill-pay-btn {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--text-dim); background: transparent;
+    padding: 0; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .bill-pay-btn.paid { background: var(--success); border-color: var(--success); }
+  .bill-pay-btn.paid::after { content: "✓"; color: #0b0d12; font-weight: bold; font-size: 14px; }
+  .bill-details {
+    margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--panel-border);
+    display: none; flex-direction: column; gap: 12px;
+  }
+  .bill.expanded .bill-details { display: flex; }
+  .bill-contact-grid {
+    display: grid; grid-template-columns: 110px 1fr;
+    gap: 6px 12px; font-size: 13px;
+  }
+  .bill-contact-grid .label {
+    color: var(--text-dim); font-weight: 500;
+  }
+  .bill-contact-grid .value { color: var(--text); word-break: break-all; }
+  .bill-contact-grid a { color: var(--accent-1); text-decoration: none; }
+  .bill-contact-grid a:hover { text-decoration: underline; }
+  .lookup-spinner {
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid var(--text-faint); border-top-color: var(--accent-1);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    vertical-align: middle; margin-left: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .deadline-overdue { color: var(--prio-1); font-weight: 600; }
+  .chip-cat { color: var(--text-dim); font-size: 11px; }
+  @media (max-width: 540px) {
+    .bill-contact-grid { grid-template-columns: 1fr; gap: 2px; }
+    .bill-contact-grid .label { margin-top: 6px; }
+  }
+
   /* Toast */
   .toast {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -338,7 +442,7 @@
 <body>
 <div class="container">
   <header class="app-header">
-    <h1>📋 To-Do List</h1>
+    <h1 id="app-title">📋 To-Do List</h1>
     <div class="sync-status">
       <span class="sync-dot" id="sync-dot"></span>
       <span id="sync-text">connecting…</span>
@@ -350,21 +454,54 @@
     <p style="margin:0">Open <code>index.html</code> and paste your Firebase project's config into the <code>firebaseConfig</code> object near the bottom of the file. See <code>SETUP.md</code> for the 5-minute walkthrough.</p>
   </div>
 
-  <nav class="tabs" id="tabs">
-    <button class="tab-today active" data-filter="today">☀️ Today</button>
-    <button class="tab-upcoming" data-filter="upcoming">📆 Upcoming</button>
-    <button class="tab-all" data-filter="all">🌌 All</button>
-    <button class="tab-done" data-filter="done">✅ Done</button>
-    <button class="tab-settings" data-filter="settings">⚙️ Settings</button>
-  </nav>
-
-  <div class="quick-add" id="quick-add">
-    <input id="qa-title" type="text" placeholder="Add a task and press Enter…" />
-    <button class="primary" id="qa-add">Add</button>
+  <div class="mode-switch" id="mode-switch">
+    <button class="mode-btn active" data-mode="todo">📋 To-Do</button>
+    <button class="mode-btn" data-mode="bills">💵 To-Pay</button>
   </div>
 
-  <div id="task-list"></div>
-  <div id="settings-view" style="display:none"></div>
+  <!-- ===== TO-DO MODE ===== -->
+  <div id="todo-mode">
+    <nav class="tabs" id="tabs">
+      <button class="tab-today active" data-filter="today">☀️ Today</button>
+      <button class="tab-upcoming" data-filter="upcoming">📆 Upcoming</button>
+      <button class="tab-all" data-filter="all">🌌 All</button>
+      <button class="tab-done" data-filter="done">✅ Done</button>
+      <button class="tab-settings" data-filter="settings">⚙️ Settings</button>
+    </nav>
+
+    <div class="quick-add" id="quick-add">
+      <input id="qa-title" type="text" placeholder="Add a task and press Enter…" />
+      <button class="primary" id="qa-add">Add</button>
+    </div>
+
+    <div id="task-list"></div>
+    <div id="settings-view" style="display:none"></div>
+  </div>
+
+  <!-- ===== TO-PAY MODE ===== -->
+  <div id="bills-mode" style="display:none">
+    <div class="bill-summary" id="bill-summary">
+      <span>Monthly burn: <strong id="bs-monthly">$0</strong></span>
+      <span>Due this month: <strong id="bs-due-month">$0</strong></span>
+      <span>Open bills: <strong id="bs-open-count">0</strong></span>
+    </div>
+
+    <nav class="tabs" id="bill-tabs">
+      <button class="tab-today active" data-bill-filter="month">📅 This Month</button>
+      <button class="tab-upcoming" data-bill-filter="upcoming">⏭️ Upcoming</button>
+      <button class="tab-all" data-bill-filter="all">💳 All</button>
+      <button class="tab-done" data-bill-filter="paid">✅ Paid</button>
+      <button class="tab-settings" data-bill-filter="settings">⚙️ Settings</button>
+    </nav>
+
+    <div class="quick-add" id="bill-quick-add">
+      <input id="bill-qa-url" type="text" placeholder="Paste a company URL or type a name… (e.g. netflix.com)" />
+      <button class="primary" id="bill-qa-add">Add</button>
+    </div>
+
+    <div id="bills-list"></div>
+    <div id="bills-settings-view" style="display:none"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -402,10 +539,29 @@ const DEFAULT_CATEGORIES = [
 
 // ----- State -----
 let app, db;
+let mode = localStorage.getItem("td-mode") || "todo";
 let tasks = [];
 let categories = [];
 let currentFilter = "today";
 let expandedId = null;
+let bills = [];
+let billCategories = [];
+let currentBillFilter = "month";
+let expandedBillId = null;
+
+const DEFAULT_BILL_CATEGORIES = [
+  { name: "Utilities", emoji: "⚡" },
+  { name: "Phone", emoji: "📱" },
+  { name: "Internet", emoji: "🌐" },
+  { name: "Streaming", emoji: "📺" },
+  { name: "Software", emoji: "💻" },
+  { name: "Memberships", emoji: "🎟️" },
+  { name: "Insurance", emoji: "🛡️" },
+  { name: "Credit Cards", emoji: "💳" },
+  { name: "Loans", emoji: "🏦" },
+  { name: "Rent / Mortgage", emoji: "🏠" },
+  { name: "Auto", emoji: "🚗" }
+];
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -486,6 +642,27 @@ function initSubscriptions() {
   }, (err) => {
     setSyncStatus("error", "sync error");
     toast("Tasks sync error: " + err.message, true);
+  });
+
+  // Bill categories
+  const billCatsRef = collection(db, "bill_categories");
+  onSnapshot(billCatsRef, async (snap) => {
+    billCategories = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (billCategories.length === 0) {
+      for (const c of DEFAULT_BILL_CATEGORIES) {
+        await addDoc(billCatsRef, { ...c, parentId: null });
+      }
+    }
+    if (mode === "bills") render();
+  });
+
+  // Bills
+  const billsRef = query(collection(db, "bills"), orderBy("createdAt", "desc"));
+  onSnapshot(billsRef, (snap) => {
+    bills = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (mode === "bills") render();
+  }, (err) => {
+    toast("Bills sync error: " + err.message, true);
   });
 }
 
@@ -568,6 +745,17 @@ function filterTasks() {
 
 // ----- Render -----
 function render() {
+  // Switch between modes
+  if (mode === "bills") {
+    $("#todo-mode").style.display = "none";
+    $("#bills-mode").style.display = "block";
+    $("#app-title").textContent = "💵 To-Pay List";
+    renderBillsView();
+    return;
+  }
+  $("#todo-mode").style.display = "block";
+  $("#bills-mode").style.display = "none";
+  $("#app-title").textContent = "📋 To-Do List";
   if (currentFilter === "settings") {
     $("#task-list").style.display = "none";
     $("#quick-add").style.display = "none";
@@ -578,6 +766,34 @@ function render() {
     $("#quick-add").style.display = "flex";
     $("#settings-view").style.display = "none";
     renderTasks();
+  }
+}
+
+function renderBillsView() {
+  // Top summary
+  const openBills = bills.filter(b => b.status !== "paid");
+  const monthlyBurn = bills
+    .filter(b => b.frequency === "monthly")
+    .reduce((s, b) => s + (Number(b.amount) || 0), 0);
+  const today = todayISO();
+  const monthEnd = lastDayOfMonth();
+  const dueThisMonth = openBills
+    .filter(b => b.dueDate && b.dueDate <= monthEnd)
+    .reduce((s, b) => s + (Number(b.amount) || 0), 0);
+  $("#bs-monthly").textContent = "$" + monthlyBurn.toFixed(2);
+  $("#bs-due-month").textContent = "$" + dueThisMonth.toFixed(2);
+  $("#bs-open-count").textContent = openBills.length;
+
+  if (currentBillFilter === "settings") {
+    $("#bills-list").style.display = "none";
+    $("#bill-quick-add").style.display = "none";
+    $("#bills-settings-view").style.display = "block";
+    renderBillsSettings();
+  } else {
+    $("#bills-list").style.display = "block";
+    $("#bill-quick-add").style.display = "flex";
+    $("#bills-settings-view").style.display = "none";
+    renderBills();
   }
 }
 
@@ -949,10 +1165,475 @@ function categoryBreadcrumb(cat, sep = " / ") {
   return categoryPath(cat).map(p => `${p.emoji || ""} ${p.name}`.trim()).join(sep);
 }
 
-// ----- Tabs + quick add -----
-$$("nav.tabs button").forEach(btn => {
+// =====================================================================
+// ===== BILLS: helpers, CRUD, recurrence, URL lookup, rendering ========
+// =====================================================================
+
+function lastDayOfMonth() {
+  const d = new Date(); const end = new Date(d.getFullYear(), d.getMonth()+1, 0);
+  return end.toISOString().slice(0, 10);
+}
+function fmtMoney(n) {
+  const v = Number(n) || 0;
+  return "$" + v.toFixed(2);
+}
+function extractDomain(url) {
+  try {
+    let u = url.trim();
+    if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+    const parsed = new URL(u);
+    return parsed.hostname.replace(/^www\./, "");
+  } catch (e) { return ""; }
+}
+function advanceDate(iso, frequency) {
+  if (!iso) return iso;
+  const d = new Date(iso + "T00:00:00");
+  if (isNaN(d)) return iso;
+  if (frequency === "weekly") d.setDate(d.getDate() + 7);
+  else if (frequency === "monthly") d.setMonth(d.getMonth() + 1);
+  else if (frequency === "quarterly") d.setMonth(d.getMonth() + 3);
+  else if (frequency === "yearly") d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+// ----- URL lookup: best-effort, uses Clearbit logo + public CORS proxy -----
+async function lookupCompany(rawUrl) {
+  const result = { logoUrl: "", name: "", description: "", phone: "", email: "", address: "", url: "" };
+  const domain = extractDomain(rawUrl);
+  if (!domain) return result;
+  result.url = "https://" + domain;
+  result.logoUrl = "https://logo.clearbit.com/" + domain;
+  // Auto-derive a clean name from domain (e.g. "netflix" → "Netflix")
+  result.name = domain.split(".")[0].replace(/^./, c => c.toUpperCase());
+  // Try to fetch the page through a public CORS proxy and extract richer info
+  try {
+    const proxy = "https://api.allorigins.win/get?url=" + encodeURIComponent("https://" + domain + "/");
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const r = await fetch(proxy, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!r.ok) return result;
+    const data = await r.json();
+    const html = (data && data.contents) || "";
+    if (!html) return result;
+    // og:site_name → name, og:title → fallback, og:description → description
+    const grab = (re) => { const m = html.match(re); return m ? m[1].trim() : ""; };
+    const siteName = grab(/<meta[^>]+property=["']og:site_name["'][^>]+content=["']([^"']+)["']/i);
+    const ogTitle = grab(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
+    const ogDesc = grab(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i);
+    const ogImage = grab(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i);
+    if (siteName) result.name = siteName;
+    else if (ogTitle && ogTitle.length < 40) result.name = ogTitle;
+    if (ogDesc) result.description = ogDesc.slice(0, 200);
+    if (ogImage && !result.logoUrl.includes("clearbit")) result.logoUrl = ogImage;
+
+    // Phone: tel: links first, then loose regex
+    const telMatch = html.match(/href=["']tel:([+0-9().\-\s]+)["']/i);
+    if (telMatch) result.phone = telMatch[1].trim();
+    else {
+      const phoneRe = /(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/;
+      const pm = html.replace(/<[^>]+>/g, " ").match(phoneRe);
+      if (pm) result.phone = pm[0];
+    }
+    // Email: mailto: first, then regex (skip common noise)
+    const mailtoMatch = html.match(/href=["']mailto:([^"']+)["']/i);
+    if (mailtoMatch) result.email = mailtoMatch[1].split("?")[0];
+    else {
+      const emailRe = /[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/g;
+      const emails = (html.match(emailRe) || []).filter(e => !/\.(png|jpg|svg|gif|webp)$/i.test(e));
+      if (emails.length) result.email = emails[0];
+    }
+    // Address: look for <address> tag content
+    const addrMatch = html.match(/<address[^>]*>([\s\S]*?)<\/address>/i);
+    if (addrMatch) {
+      result.address = addrMatch[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200);
+    }
+  } catch (e) { /* swallow — best effort */ }
+  return result;
+}
+
+// ----- Bill CRUD -----
+async function addBillFromInput(raw) {
+  if (!raw || !raw.trim()) return;
+  if (!FIREBASE_CONFIGURED) return toast("Configure Firebase first", true);
+  const input = raw.trim();
+  const looksLikeUrl = /\./.test(input) && !/\s/.test(input);
+  const placeholder = {
+    company: looksLikeUrl ? extractDomain(input).split(".")[0].replace(/^./, c => c.toUpperCase()) : input,
+    url: looksLikeUrl ? ("https://" + extractDomain(input)) : "",
+    domain: looksLikeUrl ? extractDomain(input) : "",
+    logoUrl: looksLikeUrl ? ("https://logo.clearbit.com/" + extractDomain(input)) : "",
+    category: billCategories[0]?.name || "",
+    amount: 0,
+    currency: "$",
+    frequency: "monthly",
+    dueDate: null,
+    status: "open",
+    accountNumber: "",
+    phone: "",
+    email: "",
+    address: "",
+    description: "",
+    notes: "",
+    links: [],
+    files: [],
+    lookupStatus: looksLikeUrl ? "pending" : "",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+  try {
+    const ref = await addDoc(collection(db, "bills"), placeholder);
+    toast("Added — looking up info…");
+    if (looksLikeUrl) {
+      // Fire-and-forget lookup; updates the doc when done
+      lookupCompany(input).then(async (info) => {
+        const patch = { lookupStatus: "done", updatedAt: serverTimestamp() };
+        if (info.name) patch.company = info.name;
+        if (info.logoUrl) patch.logoUrl = info.logoUrl;
+        if (info.description) patch.description = info.description;
+        if (info.phone) patch.phone = info.phone;
+        if (info.email) patch.email = info.email;
+        if (info.address) patch.address = info.address;
+        try { await updateDoc(doc(db, "bills", ref.id), patch); } catch (e) {}
+      }).catch(() => {
+        try { updateDoc(doc(db, "bills", ref.id), { lookupStatus: "failed" }); } catch (e) {}
+      });
+    }
+  } catch (e) {
+    toast("Add bill failed: " + e.message, true);
+  }
+}
+
+async function updateBill(id, patch) {
+  try {
+    await updateDoc(doc(db, "bills", id), { ...patch, updatedAt: serverTimestamp() });
+  } catch (e) { toast("Update failed: " + e.message, true); }
+}
+async function deleteBill(b) {
+  if (!confirm(`Delete "${b.company}"?`)) return;
+  try { await deleteDoc(doc(db, "bills", b.id)); toast("Deleted"); }
+  catch (e) { toast("Delete failed: " + e.message, true); }
+}
+async function markBillPaid(b) {
+  // Mark current as paid + (if recurring) create next month's instance
+  try {
+    await updateBill(b.id, { status: "paid", paidAt: new Date().toISOString().slice(0, 10) });
+    if (b.frequency && b.frequency !== "once") {
+      const next = { ...b };
+      delete next.id;
+      next.status = "open";
+      next.paidAt = "";
+      next.dueDate = advanceDate(b.dueDate, b.frequency);
+      next.createdAt = serverTimestamp();
+      next.updatedAt = serverTimestamp();
+      await addDoc(collection(db, "bills"), next);
+      toast("Marked paid — next " + b.frequency + " bill created");
+    } else {
+      toast("Marked paid");
+    }
+  } catch (e) { toast("Mark paid failed: " + e.message, true); }
+}
+async function reopenBill(b) {
+  await updateBill(b.id, { status: "open", paidAt: "" });
+}
+
+// ----- Filtering -----
+function filterBills() {
+  const today = todayISO();
+  const monthEnd = lastDayOfMonth();
+  const in30 = addDaysISO(30);
+  if (currentBillFilter === "month") {
+    return bills.filter(b => b.status !== "paid" && (!b.dueDate || b.dueDate <= monthEnd));
+  }
+  if (currentBillFilter === "upcoming") {
+    return bills.filter(b => b.status !== "paid" && b.dueDate && b.dueDate > monthEnd && b.dueDate <= in30);
+  }
+  if (currentBillFilter === "all") {
+    return bills.filter(b => b.status !== "paid");
+  }
+  if (currentBillFilter === "paid") {
+    return bills.filter(b => b.status === "paid");
+  }
+  return bills;
+}
+
+// ----- Bills render -----
+function renderBills() {
+  const list = filterBills();
+  const root = $("#bills-list");
+  if (list.length === 0) {
+    const empty = {
+      month: { e: "💸", m: "No bills due this month." },
+      upcoming: { e: "📅", m: "Nothing coming up." },
+      all: { e: "🎉", m: "No open bills. Add one above." },
+      paid: { e: "✅", m: "No paid bills yet." }
+    }[currentBillFilter];
+    root.innerHTML = `<div class="empty-state"><div class="emoji">${empty.e}</div><div>${empty.m}</div></div>`;
+    return;
+  }
+  // Sort by due date asc, no-due last
+  const sorted = [...list].sort((a, b) => {
+    if (!a.dueDate) return 1;
+    if (!b.dueDate) return -1;
+    return a.dueDate.localeCompare(b.dueDate);
+  });
+  root.innerHTML = sorted.map(billHtml).join("");
+  sorted.forEach(b => bindBillEvents(b));
+}
+
+function billHtml(b) {
+  const isExpanded = expandedBillId === b.id;
+  const isPaid = b.status === "paid";
+  const today = todayISO();
+  const overdue = !isPaid && b.dueDate && b.dueDate < today;
+  const freqLabel = ({ monthly: "/mo", quarterly: "/qtr", yearly: "/yr", weekly: "/wk", once: "" })[b.frequency] || "";
+  const cat = billCategories.find(c => c.name === b.category);
+  const catChip = cat ? `<span class="chip-cat">${cat.emoji} ${escapeHtml(cat.name)}</span>` : (b.category ? `<span class="chip-cat">${escapeHtml(b.category)}</span>` : "");
+  const lookupSpinner = b.lookupStatus === "pending" ? `<span class="lookup-spinner" title="Looking up info…"></span>` : "";
+  let dueText = "";
+  if (b.dueDate) {
+    const cls = overdue ? "deadline-overdue" : (b.dueDate === today ? "deadline-warning" : "");
+    dueText = `<span class="${cls}">📅 ${fmtDate(b.dueDate)}${overdue ? " · overdue" : ""}</span>`;
+  } else if (isPaid && b.paidAt) {
+    dueText = `<span>paid ${fmtDate(b.paidAt)}</span>`;
+  }
+  const logoHtml = b.logoUrl
+    ? `<div class="bill-logo"><img src="${escapeHtml(b.logoUrl)}" alt="" onerror="this.parentElement.innerHTML='💵'"/></div>`
+    : `<div class="bill-logo">💵</div>`;
+  return `
+    <div class="bill ${isExpanded ? 'expanded' : ''} ${isPaid ? 'paid' : ''}" data-bill-id="${b.id}">
+      <div class="bill-head">
+        ${logoHtml}
+        <div class="bill-body" data-action="expand">
+          <div class="bill-title">${escapeHtml(b.company || "Unnamed bill")}${lookupSpinner}</div>
+          <div class="bill-meta">
+            ${catChip}
+            ${dueText}
+          </div>
+        </div>
+        <div class="bill-amount">
+          ${b.currency || "$"}${(Number(b.amount) || 0).toFixed(2)}
+          <span class="freq">${freqLabel}</span>
+        </div>
+        <button class="bill-pay-btn ${isPaid ? 'paid' : ''}" data-action="toggle-paid" title="${isPaid ? 'Reopen' : 'Mark paid'}"></button>
+      </div>
+      ${isExpanded ? billDetailsHtml(b) : ""}
+    </div>
+  `;
+}
+
+function billDetailsHtml(b) {
+  const catOptions = billCategories.map(c =>
+    `<option value="${escapeHtml(c.name)}" ${c.name === b.category ? "selected" : ""}>${c.emoji || ""} ${escapeHtml(c.name)}</option>`
+  ).join("");
+  const freqOptions = ["once","weekly","monthly","quarterly","yearly"].map(f =>
+    `<option value="${f}" ${f === (b.frequency || "monthly") ? "selected" : ""}>${f === "once" ? "One-off" : f.charAt(0).toUpperCase()+f.slice(1)}</option>`
+  ).join("");
+  const linksHtml = (b.links || []).map((l, i) => `
+    <div class="link-row" data-link-idx="${i}">
+      <input type="text" placeholder="Label" value="${escapeHtml(l.label || "")}" data-action="edit-link-label" />
+      <input type="url" placeholder="https://…" value="${escapeHtml(l.url || "")}" data-action="edit-link-url" />
+      ${l.url ? `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">↗</a>` : ""}
+      <button class="icon-btn danger" data-action="del-link">×</button>
+    </div>
+  `).join("");
+  const filesHtml = (b.files || []).map((f, i) => `
+    <div class="link-row" data-file-idx="${i}">
+      <input type="text" placeholder="Label (e.g. Statement.pdf)" value="${escapeHtml(f.name || "")}" data-action="edit-file-name" />
+      <input type="text" placeholder="obsidian://open?vault=…&file=…" value="${escapeHtml(f.url || "")}" data-action="edit-file-url" />
+      ${f.url ? `<a href="${escapeHtml(f.url)}" target="_blank" rel="noopener">↗</a>` : ""}
+      <button class="icon-btn danger" data-action="del-file">×</button>
+    </div>
+  `).join("");
+  return `
+    <div class="bill-details">
+      <div class="field-row">
+        <div class="field"><label>Company</label><input type="text" value="${escapeHtml(b.company || "")}" data-action="edit-company" /></div>
+        <div class="field"><label>Website</label><input type="url" value="${escapeHtml(b.url || "")}" data-action="edit-url" placeholder="https://…" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Amount</label><input type="number" step="0.01" value="${(Number(b.amount) || 0).toFixed(2)}" data-action="edit-amount" /></div>
+        <div class="field"><label>Frequency</label><select data-action="edit-frequency">${freqOptions}</select></div>
+        <div class="field"><label>Due date</label><input type="date" value="${b.dueDate || ''}" data-action="edit-due" /></div>
+        <div class="field"><label>Category</label><select data-action="edit-category">${catOptions}</select></div>
+      </div>
+      <div class="field"><label>Description</label><textarea data-action="edit-description" placeholder="What is this bill for?">${escapeHtml(b.description || "")}</textarea></div>
+      <div class="bill-contact-grid">
+        <span class="label">Account #</span>
+        <input type="text" value="${escapeHtml(b.accountNumber || "")}" data-action="edit-account" placeholder="—" />
+        <span class="label">Phone</span>
+        <input type="text" value="${escapeHtml(b.phone || "")}" data-action="edit-phone" placeholder="—" />
+        <span class="label">Email</span>
+        <input type="text" value="${escapeHtml(b.email || "")}" data-action="edit-email" placeholder="—" />
+        <span class="label">Address</span>
+        <input type="text" value="${escapeHtml(b.address || "")}" data-action="edit-address" placeholder="—" />
+      </div>
+      <div class="field">
+        <label>Notes</label>
+        <textarea data-action="edit-notes" placeholder="Personal notes…">${escapeHtml(b.notes || "")}</textarea>
+      </div>
+      <div class="field">
+        <label>Links</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${linksHtml}
+          <button class="btn" data-action="add-link">+ Add link</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Obsidian files</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${filesHtml}
+          <button class="btn" data-action="add-file">+ Add Obsidian file reference</button>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn" data-action="refetch">↻ Re-fetch from URL</button>
+        <button class="btn danger" data-action="delete">Delete</button>
+        <button class="btn primary" data-action="collapse">Done</button>
+      </div>
+    </div>
+  `;
+}
+
+function bindBillEvents(b) {
+  const root = document.querySelector(`.bill[data-bill-id="${b.id}"]`);
+  if (!root) return;
+  root.querySelectorAll("[data-action]").forEach(el => {
+    const action = el.dataset.action;
+    if (action === "expand") el.onclick = () => { expandedBillId = expandedBillId === b.id ? null : b.id; render(); };
+    if (action === "collapse") el.onclick = () => { expandedBillId = null; render(); };
+    if (action === "toggle-paid") el.onclick = (e) => {
+      e.stopPropagation();
+      if (b.status === "paid") reopenBill(b); else markBillPaid(b);
+    };
+    if (action === "delete") el.onclick = () => deleteBill(b);
+    if (action === "edit-company") el.onchange = () => updateBill(b.id, { company: el.value });
+    if (action === "edit-url") el.onchange = () => {
+      const url = el.value.trim();
+      const domain = extractDomain(url);
+      updateBill(b.id, { url, domain, logoUrl: domain ? ("https://logo.clearbit.com/" + domain) : "" });
+    };
+    if (action === "edit-amount") el.onchange = () => updateBill(b.id, { amount: parseFloat(el.value) || 0 });
+    if (action === "edit-frequency") el.onchange = () => updateBill(b.id, { frequency: el.value });
+    if (action === "edit-due") el.onchange = () => updateBill(b.id, { dueDate: el.value || null });
+    if (action === "edit-category") el.onchange = () => updateBill(b.id, { category: el.value });
+    if (action === "edit-description") el.onblur = () => updateBill(b.id, { description: el.value });
+    if (action === "edit-account") el.onchange = () => updateBill(b.id, { accountNumber: el.value });
+    if (action === "edit-phone") el.onchange = () => updateBill(b.id, { phone: el.value });
+    if (action === "edit-email") el.onchange = () => updateBill(b.id, { email: el.value });
+    if (action === "edit-address") el.onchange = () => updateBill(b.id, { address: el.value });
+    if (action === "edit-notes") el.onblur = () => updateBill(b.id, { notes: el.value });
+    if (action === "refetch") el.onclick = async () => {
+      if (!b.url) return toast("No URL on this bill", true);
+      await updateBill(b.id, { lookupStatus: "pending" });
+      const info = await lookupCompany(b.url);
+      const patch = { lookupStatus: "done" };
+      if (info.logoUrl) patch.logoUrl = info.logoUrl;
+      if (info.name && !b.company) patch.company = info.name;
+      if (info.description && !b.description) patch.description = info.description;
+      if (info.phone && !b.phone) patch.phone = info.phone;
+      if (info.email && !b.email) patch.email = info.email;
+      if (info.address && !b.address) patch.address = info.address;
+      await updateBill(b.id, patch);
+      toast("Re-fetched");
+    };
+
+    // Links
+    if (action === "edit-link-label") el.onchange = () => {
+      const i = parseInt(el.closest("[data-link-idx]").dataset.linkIdx);
+      const links = [...(b.links || [])]; links[i] = { ...links[i], label: el.value };
+      updateBill(b.id, { links });
+    };
+    if (action === "edit-link-url") el.onchange = () => {
+      const i = parseInt(el.closest("[data-link-idx]").dataset.linkIdx);
+      const links = [...(b.links || [])]; links[i] = { ...links[i], url: el.value };
+      updateBill(b.id, { links });
+    };
+    if (action === "del-link") el.onclick = () => {
+      const i = parseInt(el.closest("[data-link-idx]").dataset.linkIdx);
+      updateBill(b.id, { links: (b.links || []).filter((_, idx) => idx !== i) });
+    };
+    if (action === "add-link") el.onclick = () => updateBill(b.id, { links: [...(b.links || []), { label: "", url: "" }] });
+
+    // Files (Obsidian)
+    if (action === "edit-file-name") el.onchange = () => {
+      const i = parseInt(el.closest("[data-file-idx]").dataset.fileIdx);
+      const files = [...(b.files || [])]; files[i] = { ...files[i], name: el.value };
+      updateBill(b.id, { files });
+    };
+    if (action === "edit-file-url") el.onchange = () => {
+      const i = parseInt(el.closest("[data-file-idx]").dataset.fileIdx);
+      const files = [...(b.files || [])]; files[i] = { ...files[i], url: el.value };
+      updateBill(b.id, { files });
+    };
+    if (action === "del-file") el.onclick = () => {
+      const i = parseInt(el.closest("[data-file-idx]").dataset.fileIdx);
+      updateBill(b.id, { files: (b.files || []).filter((_, idx) => idx !== i) });
+    };
+    if (action === "add-file") el.onclick = () => updateBill(b.id, { files: [...(b.files || []), { name: "", url: "" }] });
+  });
+}
+
+function renderBillsSettings() {
+  const root = $("#bills-settings-view");
+  const catsHtml = billCategories
+    .slice()
+    .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+    .map(c => `
+      <div class="cat-row" data-bcat-id="${c.id}">
+        <input class="cat-emoji-input" type="text" value="${escapeHtml(c.emoji || "")}" data-bcat-action="emoji" maxlength="4" />
+        <input type="text" value="${escapeHtml(c.name)}" data-bcat-action="name" />
+        <button class="icon-btn danger" data-bcat-action="delete">×</button>
+      </div>
+    `).join("");
+  root.innerHTML = `
+    <div class="settings-section">
+      <h2>Bill Categories</h2>
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">
+        Categories for bills. Separate from your task categories.
+      </div>
+      ${catsHtml}
+      <div class="cat-row" style="border-top:1px solid var(--panel-border);margin-top:10px;padding-top:14px">
+        <input class="cat-emoji-input" type="text" placeholder="📁" id="new-bcat-emoji" maxlength="4" />
+        <input type="text" placeholder="New category name" id="new-bcat-name" />
+        <button class="btn primary" id="add-bcat-btn">Add</button>
+      </div>
+    </div>
+    <div class="settings-section">
+      <h2>How To-Pay works</h2>
+      <p style="margin:0;color:var(--text-dim);font-size:13px;line-height:1.6">
+        Paste a company URL (e.g. <code style="background:var(--panel-2);padding:1px 5px;border-radius:3px">netflix.com</code>) and the app auto-pulls the logo, plus best-effort phone / email / address from the website. Set the amount, due date, and frequency. When you mark a recurring bill paid, the next instance auto-creates with the next due date.
+      </p>
+    </div>
+  `;
+  root.querySelectorAll("[data-bcat-id]").forEach(row => {
+    const id = row.dataset.bcatId;
+    const c = billCategories.find(x => x.id === id);
+    row.querySelectorAll("[data-bcat-action]").forEach(el => {
+      const action = el.dataset.bcatAction;
+      if (action === "emoji") el.onchange = () => updateDoc(doc(db, "bill_categories", id), { emoji: el.value });
+      if (action === "name") el.onchange = () => updateDoc(doc(db, "bill_categories", id), { name: el.value });
+      if (action === "delete") el.onclick = async () => {
+        if (!confirm(`Delete category "${c.name}"?`)) return;
+        await deleteDoc(doc(db, "bill_categories", id));
+      };
+    });
+  });
+  $("#add-bcat-btn").onclick = async () => {
+    const emoji = $("#new-bcat-emoji").value.trim() || "📁";
+    const name = $("#new-bcat-name").value.trim();
+    if (!name) return toast("Name required", true);
+    await addDoc(collection(db, "bill_categories"), { name, emoji, parentId: null });
+    $("#new-bcat-name").value = ""; $("#new-bcat-emoji").value = "";
+  };
+}
+
+// ----- Tabs + quick add + mode switcher -----
+
+// To-Do tabs (scoped to #tabs only — NOT #bill-tabs)
+$("#tabs").querySelectorAll("button").forEach(btn => {
   btn.onclick = () => {
-    $$("nav.tabs button").forEach(b => b.classList.remove("active"));
+    $("#tabs").querySelectorAll("button").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentFilter = btn.dataset.filter;
     expandedId = null;
@@ -960,8 +1641,38 @@ $$("nav.tabs button").forEach(btn => {
   };
 });
 
+// Bills tabs
+$("#bill-tabs").querySelectorAll("button").forEach(btn => {
+  btn.onclick = () => {
+    $("#bill-tabs").querySelectorAll("button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentBillFilter = btn.dataset.billFilter;
+    expandedBillId = null;
+    render();
+  };
+});
+
+// Mode switcher
+$("#mode-switch").querySelectorAll("button").forEach(btn => {
+  btn.onclick = () => {
+    $("#mode-switch").querySelectorAll("button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    mode = btn.dataset.mode;
+    localStorage.setItem("td-mode", mode);
+    render();
+  };
+});
+
+// Restore mode button state from saved mode
+$("#mode-switch").querySelectorAll("button").forEach(b => {
+  b.classList.toggle("active", b.dataset.mode === mode);
+});
+
 $("#qa-add").onclick = () => { addTask($("#qa-title").value); $("#qa-title").value = ""; };
 $("#qa-title").onkeydown = (e) => { if (e.key === "Enter") $("#qa-add").click(); };
+
+$("#bill-qa-add").onclick = () => { addBillFromInput($("#bill-qa-url").value); $("#bill-qa-url").value = ""; };
+$("#bill-qa-url").onkeydown = (e) => { if (e.key === "Enter") $("#bill-qa-add").click(); };
 
 // Initial render (empty state until data arrives)
 render();
