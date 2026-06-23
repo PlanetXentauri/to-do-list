@@ -1202,7 +1202,7 @@ async function lookupCompany(rawUrl) {
   const domain = extractDomain(rawUrl);
   if (!domain) return result;
   result.url = "https://" + domain;
-  result.logoUrl = "https://logo.clearbit.com/" + domain;
+  result.logoUrl = "https://www.google.com/s2/favicons?sz=128&domain=" + domain;
   // Auto-derive a clean name from domain (e.g. "netflix" → "Netflix")
   result.name = domain.split(".")[0].replace(/^./, c => c.toUpperCase());
   // Try to fetch the page through a public CORS proxy and extract richer info
@@ -1262,7 +1262,7 @@ async function addBillFromInput(raw) {
     company: looksLikeUrl ? extractDomain(input).split(".")[0].replace(/^./, c => c.toUpperCase()) : input,
     url: looksLikeUrl ? ("https://" + extractDomain(input)) : "",
     domain: looksLikeUrl ? extractDomain(input) : "",
-    logoUrl: looksLikeUrl ? ("https://logo.clearbit.com/" + extractDomain(input)) : "",
+    logoUrl: looksLikeUrl ? ("https://www.google.com/s2/favicons?sz=128&domain=" + extractDomain(input)) : "",
     category: billCategories[0]?.name || "",
     amount: 0,
     currency: "$",
@@ -1511,7 +1511,7 @@ function bindBillEvents(b) {
     if (action === "edit-url") el.onchange = () => {
       const url = el.value.trim();
       const domain = extractDomain(url);
-      updateBill(b.id, { url, domain, logoUrl: domain ? ("https://logo.clearbit.com/" + domain) : "" });
+      updateBill(b.id, { url, domain, logoUrl: domain ? ("https://www.google.com/s2/favicons?sz=128&domain=" + domain) : "" });
     };
     if (action === "edit-amount") el.onchange = () => updateBill(b.id, { amount: parseFloat(el.value) || 0 });
     if (action === "edit-frequency") el.onchange = () => updateBill(b.id, { frequency: el.value });
