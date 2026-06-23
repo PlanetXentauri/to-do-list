@@ -413,6 +413,103 @@
     .bill-contact-grid .label { margin-top: 6px; }
   }
 
+  /* ====== Credit mode ====== */
+  .scores-card {
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 14px; padding: 18px; margin-bottom: 14px;
+  }
+  .scores-card h2 {
+    margin: 0 0 14px; font-size: 14px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-dim); font-weight: 600;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .scores-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .score-cell {
+    background: var(--panel-2); border: 1px solid var(--panel-border);
+    border-radius: 12px; padding: 12px; text-align: center;
+  }
+  .score-cell .bureau {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 700; color: var(--text-dim); margin-bottom: 6px;
+  }
+  .score-cell.experian .bureau { color: #3b82f6; }
+  .score-cell.transunion .bureau { color: #a855f7; }
+  .score-cell.equifax .bureau { color: #ef4444; }
+  .score-cell input {
+    background: transparent; border: none; padding: 0;
+    text-align: center; font-size: 26px; font-weight: 800;
+    color: var(--text); font-variant-numeric: tabular-nums;
+  }
+  .score-cell .score-label {
+    font-size: 10px; color: var(--text-faint); margin-top: 2px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .score-cell .score-band {
+    font-size: 10px; color: var(--text-dim); margin-top: 4px;
+    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
+  }
+  .score-band.band-poor { color: #ef4444; }
+  .score-band.band-fair { color: #f97316; }
+  .score-band.band-good { color: #eab308; }
+  .score-band.band-very-good { color: #84cc16; }
+  .score-band.band-excellent { color: #22c55e; }
+  .scores-subtitle {
+    font-size: 11px; color: var(--text-faint); margin: 8px 0 0;
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+    grid-column: 1 / -1;
+  }
+  @media (max-width: 540px) {
+    .scores-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Reports card */
+  .reports-card {
+    background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: 14px; padding: 18px; margin-bottom: 14px;
+  }
+  .reports-card h2 {
+    margin: 0 0 12px; font-size: 14px; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--text-dim); font-weight: 600;
+  }
+
+  /* Bureau pills (use existing tab classes but customize colors) */
+  .tab-bureau { color: var(--text-dim); border-color: var(--panel-border); background: var(--panel); }
+  .tab-bureau.tab-experian { color: #93c5fd; border-color: rgba(59,130,246,0.30); background: rgba(59,130,246,0.06); }
+  .tab-bureau.tab-experian.active { color: #dbeafe; background: rgba(59,130,246,0.28); border-color: rgba(59,130,246,0.7); }
+  .tab-bureau.tab-transunion { color: #c4b5fd; border-color: rgba(168,85,247,0.30); background: rgba(168,85,247,0.06); }
+  .tab-bureau.tab-transunion.active { color: #ede9fe; background: rgba(168,85,247,0.28); border-color: rgba(168,85,247,0.7); }
+  .tab-bureau.tab-equifax { color: #fca5a5; border-color: rgba(239,68,68,0.30); background: rgba(239,68,68,0.06); }
+  .tab-bureau.tab-equifax.active { color: #fee2e2; background: rgba(239,68,68,0.28); border-color: rgba(239,68,68,0.7); }
+
+  /* Dispute card — reuses .bill but with status badge */
+  .status-badge {
+    display: inline-block; padding: 2px 9px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .status-draft { background: rgba(139,146,165,0.18); color: #94a3b8; }
+  .status-mailed { background: rgba(212,165,93,0.18); color: #fcd97d; }
+  .status-responded { background: rgba(91,141,168,0.20); color: #93c5fd; }
+  .status-resolved { background: rgba(74,222,128,0.18); color: #86efac; }
+  .status-rejected { background: rgba(239,68,68,0.18); color: #fca5a5; }
+  .status-redisputed { background: rgba(168,85,247,0.18); color: #c4b5fd; }
+  .status-escalated { background: rgba(217,70,239,0.18); color: #d8b4fe; }
+
+  /* Bureau chip on dispute card */
+  .bureau-chip {
+    padding: 2px 8px; border-radius: 999px; font-size: 11px;
+    font-weight: 600; letter-spacing: 0.04em;
+  }
+  .bureau-experian { background: rgba(59,130,246,0.15); color: #93c5fd; }
+  .bureau-transunion { background: rgba(168,85,247,0.15); color: #c4b5fd; }
+  .bureau-equifax { background: rgba(239,68,68,0.15); color: #fca5a5; }
+
+  /* Status select in dispute details */
+  .status-select-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .status-select-row select { flex: 0 1 200px; }
+
   /* Toast */
   .toast {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
@@ -467,6 +564,7 @@
   <div class="mode-switch" id="mode-switch">
     <button class="mode-btn active" data-mode="todo">📋 GSD-Do <span style="opacity:.65;font-weight:500">· To-Do</span></button>
     <button class="mode-btn" data-mode="bills">💵 GSD-Pay <span style="opacity:.65;font-weight:500">· To-Pay</span></button>
+    <button class="mode-btn" data-mode="credit">📊 GSD-Credit <span style="opacity:.65;font-weight:500">· Credit</span></button>
   </div>
 
   <!-- ===== TO-DO MODE ===== -->
@@ -511,6 +609,60 @@
 
     <div id="bills-list"></div>
     <div id="bills-settings-view" style="display:none"></div>
+  </div>
+
+  <!-- ===== CREDIT MODE ===== -->
+  <div id="credit-mode" style="display:none">
+    <!-- FICO scores card -->
+    <div class="scores-card">
+      <h2>
+        <span>FICO Scores</span>
+        <span style="font-size:11px;font-weight:500;color:var(--text-faint);text-transform:none;letter-spacing:0" id="scores-updated"></span>
+      </h2>
+      <div class="scores-grid" id="scores-grid"></div>
+    </div>
+
+    <!-- Credit reports card -->
+    <div class="reports-card">
+      <h2>Credit Reports</h2>
+      <div id="reports-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      <button class="btn" id="add-report-btn" style="margin-top:8px">+ Add credit report (Obsidian / URL)</button>
+      <div style="font-size:11px;color:var(--text-faint);margin-top:6px">
+        Paste an <code style="background:var(--panel-2);padding:1px 5px;border-radius:3px">obsidian://</code> deep-link to your credit report file in Obsidian, or any URL.
+      </div>
+    </div>
+
+    <!-- Bureau filter pills -->
+    <nav class="tabs" id="credit-bureau-tabs">
+      <button class="tab-bureau active" data-bureau="all">📁 All bureaus</button>
+      <button class="tab-bureau tab-experian" data-bureau="Experian">🔵 Experian</button>
+      <button class="tab-bureau tab-transunion" data-bureau="TransUnion">🟣 TransUnion</button>
+      <button class="tab-bureau tab-equifax" data-bureau="Equifax">🔴 Equifax</button>
+      <button class="tab-settings" data-bureau="settings">⚙️ Settings</button>
+    </nav>
+
+    <!-- Status filter row -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center" id="status-filter-row">
+      <span style="font-size:12px;color:var(--text-dim);font-weight:600;text-transform:uppercase;letter-spacing:.06em">Status:</span>
+      <select id="status-filter" style="max-width:200px;padding:6px 10px;font-size:13px">
+        <option value="all">All disputes</option>
+        <option value="Draft">Draft</option>
+        <option value="Mailed">Mailed</option>
+        <option value="Responded">Responded</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Re-disputed">Re-disputed</option>
+        <option value="Escalated">Escalated</option>
+      </select>
+    </div>
+
+    <div class="quick-add" id="dispute-quick-add">
+      <input id="dispute-qa-input" type="text" placeholder="Paste company URL or type a name to start a dispute…" />
+      <button class="primary" id="dispute-qa-add">Add</button>
+    </div>
+
+    <div id="disputes-list"></div>
+    <div id="credit-settings-view" style="display:none"></div>
   </div>
 </div>
 
@@ -558,6 +710,28 @@ let bills = [];
 let billCategories = [];
 let currentBillFilter = "month";
 let expandedBillId = null;
+
+// Credit state
+let creditScores = null;
+let disputes = [];
+let currentBureauFilter = "all";
+let currentStatusFilter = "all";
+let expandedDisputeId = null;
+
+const BUREAUS = ["Experian", "TransUnion", "Equifax"];
+const DISPUTE_STATUSES = ["Draft", "Mailed", "Responded", "Resolved", "Rejected", "Re-disputed", "Escalated"];
+function statusClass(s) {
+  return "status-" + (s || "Draft").toLowerCase().replace(/[^a-z]/g, "");
+}
+function ficoBand(s) {
+  const n = Number(s) || 0;
+  if (n === 0) return { label: "—", cls: "" };
+  if (n < 580) return { label: "Poor", cls: "band-poor" };
+  if (n < 670) return { label: "Fair", cls: "band-fair" };
+  if (n < 740) return { label: "Good", cls: "band-good" };
+  if (n < 800) return { label: "Very Good", cls: "band-very-good" };
+  return { label: "Excellent", cls: "band-excellent" };
+}
 
 const DEFAULT_BILL_CATEGORIES = [
   { name: "Utilities", emoji: "⚡" },
@@ -674,6 +848,21 @@ function initSubscriptions() {
   }, (err) => {
     toast("Bills sync error: " + err.message, true);
   });
+
+  // Credit scores (single doc)
+  onSnapshot(doc(db, "credit_scores", "current"), (snap) => {
+    creditScores = snap.exists() ? snap.data() : null;
+    if (mode === "credit") render();
+  });
+
+  // Disputes
+  const disputesRef = query(collection(db, "disputes"), orderBy("createdAt", "desc"));
+  onSnapshot(disputesRef, (snap) => {
+    disputes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (mode === "credit") render();
+  }, (err) => {
+    toast("Disputes sync error: " + err.message, true);
+  });
 }
 
 // ----- Task CRUD -----
@@ -755,18 +944,25 @@ function filterTasks() {
 
 // ----- Render -----
 function render() {
-  // Switch between modes
+  // Hide all modes, then show the right one
+  $("#todo-mode").style.display = "none";
+  $("#bills-mode").style.display = "none";
+  $("#credit-mode").style.display = "none";
+  $("#app-title").textContent = "GSD";
+
   if (mode === "bills") {
-    $("#todo-mode").style.display = "none";
     $("#bills-mode").style.display = "block";
-    $("#app-title").textContent = "GSD";
     $("#app-tagline").textContent = "Get Shi*t Done · Pay";
     renderBillsView();
     return;
   }
+  if (mode === "credit") {
+    $("#credit-mode").style.display = "block";
+    $("#app-tagline").textContent = "Get Shi*t Done · Credit";
+    renderCreditView();
+    return;
+  }
   $("#todo-mode").style.display = "block";
-  $("#bills-mode").style.display = "none";
-  $("#app-title").textContent = "GSD";
   $("#app-tagline").textContent = "Get Shi*t Done · To-Do";
   if (currentFilter === "settings") {
     $("#task-list").style.display = "none";
@@ -1640,6 +1836,407 @@ function renderBillsSettings() {
   };
 }
 
+// =====================================================================
+// ===== CREDIT: FICO scores, reports, disputes ========================
+// =====================================================================
+
+async function setFicoScore(field, value) {
+  if (!FIREBASE_CONFIGURED) return toast("Configure Firebase first", true);
+  try {
+    await setDoc(doc(db, "credit_scores", "current"), {
+      [field]: Number(value) || 0,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (e) { toast("Save score failed: " + e.message, true); }
+}
+
+async function setReports(reports) {
+  try {
+    await setDoc(doc(db, "credit_scores", "current"), {
+      reports,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+  } catch (e) { toast("Save reports failed: " + e.message, true); }
+}
+
+async function addDisputeFromInput(raw) {
+  if (!raw || !raw.trim()) return;
+  if (!FIREBASE_CONFIGURED) return toast("Configure Firebase first", true);
+  const input = raw.trim();
+  const looksLikeUrl = /\./.test(input) && !/\s/.test(input);
+  const placeholder = {
+    company: looksLikeUrl ? extractDomain(input).split(".")[0].replace(/^./, c => c.toUpperCase()) : input,
+    url: looksLikeUrl ? ("https://" + extractDomain(input)) : "",
+    domain: looksLikeUrl ? extractDomain(input) : "",
+    logoUrl: looksLikeUrl ? ("https://www.google.com/s2/favicons?sz=128&domain=" + extractDomain(input)) : "",
+    bureau: currentBureauFilter !== "all" && BUREAUS.includes(currentBureauFilter) ? currentBureauFilter : "Experian",
+    status: "Draft",
+    disputedAmount: 0,
+    accountNumber: "",
+    reason: "",
+    notes: "",
+    phone: "",
+    email: "",
+    address: "",
+    description: "",
+    mailedDate: "",
+    responseDate: "",
+    links: [],
+    files: [],
+    lookupStatus: looksLikeUrl ? "pending" : "",
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp()
+  };
+  try {
+    const ref = await addDoc(collection(db, "disputes"), placeholder);
+    toast("Added — looking up info…");
+    if (looksLikeUrl) {
+      lookupCompany(input).then(async (info) => {
+        const patch = { lookupStatus: "done", updatedAt: serverTimestamp() };
+        if (info.name) patch.company = info.name;
+        if (info.logoUrl) patch.logoUrl = info.logoUrl;
+        if (info.description) patch.description = info.description;
+        if (info.phone) patch.phone = info.phone;
+        if (info.email) patch.email = info.email;
+        if (info.address) patch.address = info.address;
+        try { await updateDoc(doc(db, "disputes", ref.id), patch); } catch (e) {}
+      }).catch(() => {
+        try { updateDoc(doc(db, "disputes", ref.id), { lookupStatus: "failed" }); } catch (e) {}
+      });
+    }
+  } catch (e) { toast("Add dispute failed: " + e.message, true); }
+}
+
+async function updateDispute(id, patch) {
+  try { await updateDoc(doc(db, "disputes", id), { ...patch, updatedAt: serverTimestamp() }); }
+  catch (e) { toast("Update failed: " + e.message, true); }
+}
+async function deleteDispute(d) {
+  if (!confirm(`Delete dispute "${d.company}"?`)) return;
+  try { await deleteDoc(doc(db, "disputes", d.id)); toast("Deleted"); }
+  catch (e) { toast("Delete failed: " + e.message, true); }
+}
+
+function filterDisputes() {
+  let list = disputes;
+  if (currentBureauFilter !== "all" && currentBureauFilter !== "settings") {
+    list = list.filter(d => d.bureau === currentBureauFilter);
+  }
+  if (currentStatusFilter !== "all") {
+    list = list.filter(d => d.status === currentStatusFilter);
+  }
+  return list;
+}
+
+function renderCreditView() {
+  if (currentBureauFilter === "settings") {
+    $("#scores-grid").parentElement.parentElement.style.display = "none"; // hide cards
+    $("#dispute-quick-add").style.display = "none";
+    $("#status-filter-row").style.display = "none";
+    $("#disputes-list").style.display = "none";
+    $("#credit-settings-view").style.display = "block";
+    renderCreditSettings();
+    return;
+  }
+  // Restore all visible elements
+  document.querySelectorAll("#credit-mode .scores-card, #credit-mode .reports-card").forEach(el => el.style.display = "");
+  $("#dispute-quick-add").style.display = "flex";
+  $("#status-filter-row").style.display = "flex";
+  $("#disputes-list").style.display = "block";
+  $("#credit-settings-view").style.display = "none";
+
+  renderScores();
+  renderReports();
+  renderDisputes();
+}
+
+function renderScores() {
+  const grid = $("#scores-grid");
+  const data = creditScores || {};
+  const cell = (bureau, field, label) => {
+    const value = data[field] != null ? data[field] : "";
+    const band = ficoBand(value);
+    return `
+      <div class="score-cell ${bureau.toLowerCase()}">
+        <div class="bureau">${bureau}</div>
+        <input type="number" inputmode="numeric" min="300" max="850"
+               value="${value}" placeholder="—"
+               data-score-field="${field}" />
+        <div class="score-label">${label}</div>
+        <div class="score-band ${band.cls}">${band.label}</div>
+      </div>
+    `;
+  };
+  const html = `
+    ${cell("Experian", "experianFico", "FICO 8 / base")}
+    ${cell("TransUnion", "transunionFico", "FICO 8 / base")}
+    ${cell("Equifax", "equifaxFico", "FICO 8 / base")}
+    <div class="scores-subtitle">FICO Auto Score</div>
+    ${cell("Experian", "experianAuto", "FICO Auto 8")}
+    ${cell("TransUnion", "transunionAuto", "FICO Auto 8")}
+    ${cell("Equifax", "equifaxAuto", "FICO Auto 8")}
+  `;
+  grid.innerHTML = html;
+  if (data.updatedAt && data.updatedAt.toDate) {
+    const d = data.updatedAt.toDate();
+    $("#scores-updated").textContent = "Updated " + d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  } else {
+    $("#scores-updated").textContent = "";
+  }
+  grid.querySelectorAll("input[data-score-field]").forEach(inp => {
+    inp.onchange = () => setFicoScore(inp.dataset.scoreField, inp.value);
+  });
+}
+
+function renderReports() {
+  const root = $("#reports-list");
+  const reports = (creditScores && creditScores.reports) || [];
+  if (reports.length === 0) {
+    root.innerHTML = `<div style="color:var(--text-faint);font-size:13px;font-style:italic">No reports linked yet.</div>`;
+    return;
+  }
+  root.innerHTML = reports.map((r, i) => `
+    <div class="link-row" data-report-idx="${i}">
+      <input type="text" placeholder="Label (e.g. Experian 2026-06)" value="${escapeHtml(r.name || "")}" data-report-action="name" />
+      <input type="text" placeholder="obsidian://… or https://…" value="${escapeHtml(r.url || "")}" data-report-action="url" />
+      ${r.url ? `<a href="${escapeHtml(r.url)}" target="_blank" rel="noopener">↗</a>` : ""}
+      <button class="icon-btn danger" data-report-action="delete">×</button>
+    </div>
+  `).join("");
+  root.querySelectorAll("[data-report-idx]").forEach(row => {
+    const i = parseInt(row.dataset.reportIdx);
+    row.querySelectorAll("[data-report-action]").forEach(el => {
+      const a = el.dataset.reportAction;
+      if (a === "name") el.onchange = () => { const r = [...reports]; r[i] = { ...r[i], name: el.value }; setReports(r); };
+      if (a === "url") el.onchange = () => { const r = [...reports]; r[i] = { ...r[i], url: el.value }; setReports(r); };
+      if (a === "delete") el.onclick = () => { setReports(reports.filter((_, idx) => idx !== i)); };
+    });
+  });
+}
+
+function renderDisputes() {
+  const list = filterDisputes();
+  const root = $("#disputes-list");
+  if (list.length === 0) {
+    root.innerHTML = `<div class="empty-state"><div class="emoji">📊</div><div>No disputes here. Paste a company URL above to start one.</div></div>`;
+    return;
+  }
+  // Sort: open statuses first, then by createdAt desc
+  const order = { "Draft": 0, "Mailed": 1, "Responded": 2, "Re-disputed": 3, "Escalated": 4, "Resolved": 5, "Rejected": 6 };
+  const sorted = [...list].sort((a, b) => (order[a.status] ?? 99) - (order[b.status] ?? 99));
+  root.innerHTML = sorted.map(disputeHtml).join("");
+  sorted.forEach(d => bindDisputeEvents(d));
+}
+
+function disputeHtml(d) {
+  const isExpanded = expandedDisputeId === d.id;
+  const lookupSpinner = d.lookupStatus === "pending" ? `<span class="lookup-spinner" title="Looking up info…"></span>` : "";
+  const status = d.status || "Draft";
+  const statusBadge = `<span class="status-badge ${statusClass(status)}">${escapeHtml(status)}</span>`;
+  const bureauChip = `<span class="bureau-chip bureau-${(d.bureau || "experian").toLowerCase()}">${escapeHtml(d.bureau || "Experian")}</span>`;
+  const logoHtml = d.logoUrl
+    ? `<div class="bill-logo"><img src="${escapeHtml(d.logoUrl)}" alt="" onerror="this.parentElement.innerHTML='📊'"/></div>`
+    : `<div class="bill-logo">📊</div>`;
+  const dateInfo = d.mailedDate ? `📮 ${fmtDate(d.mailedDate)}` : "";
+  return `
+    <div class="bill ${isExpanded ? 'expanded' : ''}" data-dispute-id="${d.id}">
+      <div class="bill-head">
+        ${logoHtml}
+        <div class="bill-body" data-action="expand">
+          <div class="bill-title">${escapeHtml(d.company || "Unnamed dispute")}${lookupSpinner}</div>
+          <div class="bill-meta">
+            ${bureauChip}
+            ${statusBadge}
+            ${dateInfo ? `<span>${dateInfo}</span>` : ""}
+          </div>
+        </div>
+      </div>
+      ${isExpanded ? disputeDetailsHtml(d) : ""}
+    </div>
+  `;
+}
+
+function disputeDetailsHtml(d) {
+  const bureauOptions = BUREAUS.map(b =>
+    `<option value="${b}" ${b === (d.bureau || "Experian") ? "selected" : ""}>${b}</option>`
+  ).join("");
+  const statusOptions = DISPUTE_STATUSES.map(s =>
+    `<option value="${s}" ${s === (d.status || "Draft") ? "selected" : ""}>${s}</option>`
+  ).join("");
+  const linksHtml = (d.links || []).map((l, i) => `
+    <div class="link-row" data-link-idx="${i}">
+      <input type="text" placeholder="Label" value="${escapeHtml(l.label || "")}" data-action="edit-link-label" />
+      <input type="url" placeholder="https://…" value="${escapeHtml(l.url || "")}" data-action="edit-link-url" />
+      ${l.url ? `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">↗</a>` : ""}
+      <button class="icon-btn danger" data-action="del-link">×</button>
+    </div>
+  `).join("");
+  const filesHtml = (d.files || []).map((f, i) => `
+    <div class="link-row" data-file-idx="${i}">
+      <input type="text" placeholder="Label (e.g. Dispute letter.pdf)" value="${escapeHtml(f.name || "")}" data-action="edit-file-name" />
+      <input type="text" placeholder="obsidian://…" value="${escapeHtml(f.url || "")}" data-action="edit-file-url" />
+      ${f.url ? `<a href="${escapeHtml(f.url)}" target="_blank" rel="noopener">↗</a>` : ""}
+      <button class="icon-btn danger" data-action="del-file">×</button>
+    </div>
+  `).join("");
+  return `
+    <div class="bill-details">
+      <div class="field-row">
+        <div class="field"><label>Company / creditor</label><input type="text" value="${escapeHtml(d.company || "")}" data-action="edit-company" /></div>
+        <div class="field"><label>Website</label><input type="url" value="${escapeHtml(d.url || "")}" data-action="edit-url" placeholder="https://…" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Bureau</label><select data-action="edit-bureau">${bureauOptions}</select></div>
+        <div class="field"><label>Status</label><select data-action="edit-status">${statusOptions}</select></div>
+        <div class="field"><label>Mailed date</label><input type="date" value="${d.mailedDate || ''}" data-action="edit-mailed-date" /></div>
+        <div class="field"><label>Response date</label><input type="date" value="${d.responseDate || ''}" data-action="edit-response-date" /></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Account #</label><input type="text" value="${escapeHtml(d.accountNumber || "")}" data-action="edit-account" /></div>
+        <div class="field"><label>Disputed amount</label><input type="number" step="0.01" value="${(Number(d.disputedAmount) || 0).toFixed(2)}" data-action="edit-amount" /></div>
+      </div>
+      <div class="field"><label>Reason for dispute</label><textarea data-action="edit-reason" placeholder="Why is this being disputed? (e.g. not mine, paid in full, incorrect amount)">${escapeHtml(d.reason || "")}</textarea></div>
+      <div class="bill-contact-grid">
+        <span class="label">Phone</span>
+        <input type="text" value="${escapeHtml(d.phone || "")}" data-action="edit-phone" placeholder="—" />
+        <span class="label">Email</span>
+        <input type="text" value="${escapeHtml(d.email || "")}" data-action="edit-email" placeholder="—" />
+        <span class="label">Address</span>
+        <input type="text" value="${escapeHtml(d.address || "")}" data-action="edit-address" placeholder="—" />
+      </div>
+      <div class="field"><label>Notes</label><textarea data-action="edit-notes" placeholder="Status notes, conversation log…">${escapeHtml(d.notes || "")}</textarea></div>
+      <div class="field">
+        <label>Links</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${linksHtml}
+          <button class="btn" data-action="add-link">+ Add link</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Files (Obsidian)</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${filesHtml}
+          <button class="btn" data-action="add-file">+ Add Obsidian file reference</button>
+        </div>
+      </div>
+      <div class="action-row">
+        <button class="btn" data-action="refetch">↻ Re-fetch from URL</button>
+        <button class="btn danger" data-action="delete">Delete</button>
+        <button class="btn primary" data-action="collapse">Done</button>
+      </div>
+    </div>
+  `;
+}
+
+function bindDisputeEvents(d) {
+  const root = document.querySelector(`.bill[data-dispute-id="${d.id}"]`);
+  if (!root) return;
+  root.querySelectorAll("[data-action]").forEach(el => {
+    const action = el.dataset.action;
+    if (action === "expand") el.onclick = () => { expandedDisputeId = expandedDisputeId === d.id ? null : d.id; render(); };
+    if (action === "collapse") el.onclick = () => { expandedDisputeId = null; render(); };
+    if (action === "delete") el.onclick = () => deleteDispute(d);
+    if (action === "edit-company") el.onchange = () => updateDispute(d.id, { company: el.value });
+    if (action === "edit-url") el.onchange = () => {
+      const url = el.value.trim();
+      const domain = extractDomain(url);
+      updateDispute(d.id, { url, domain, logoUrl: domain ? ("https://www.google.com/s2/favicons?sz=128&domain=" + domain) : "" });
+    };
+    if (action === "edit-bureau") el.onchange = () => updateDispute(d.id, { bureau: el.value });
+    if (action === "edit-status") el.onchange = () => {
+      const patch = { status: el.value };
+      // Auto-set mailed date when marking Mailed if not set
+      if (el.value === "Mailed" && !d.mailedDate) patch.mailedDate = new Date().toISOString().slice(0, 10);
+      if (el.value === "Responded" && !d.responseDate) patch.responseDate = new Date().toISOString().slice(0, 10);
+      updateDispute(d.id, patch);
+    };
+    if (action === "edit-mailed-date") el.onchange = () => updateDispute(d.id, { mailedDate: el.value || "" });
+    if (action === "edit-response-date") el.onchange = () => updateDispute(d.id, { responseDate: el.value || "" });
+    if (action === "edit-account") el.onchange = () => updateDispute(d.id, { accountNumber: el.value });
+    if (action === "edit-amount") el.onchange = () => updateDispute(d.id, { disputedAmount: parseFloat(el.value) || 0 });
+    if (action === "edit-reason") el.onblur = () => updateDispute(d.id, { reason: el.value });
+    if (action === "edit-phone") el.onchange = () => updateDispute(d.id, { phone: el.value });
+    if (action === "edit-email") el.onchange = () => updateDispute(d.id, { email: el.value });
+    if (action === "edit-address") el.onchange = () => updateDispute(d.id, { address: el.value });
+    if (action === "edit-notes") el.onblur = () => updateDispute(d.id, { notes: el.value });
+    if (action === "refetch") el.onclick = async () => {
+      if (!d.url) return toast("No URL on this dispute", true);
+      await updateDispute(d.id, { lookupStatus: "pending" });
+      const info = await lookupCompany(d.url);
+      const patch = { lookupStatus: "done" };
+      if (info.logoUrl) patch.logoUrl = info.logoUrl;
+      if (info.name && !d.company) patch.company = info.name;
+      if (info.description && !d.description) patch.description = info.description;
+      if (info.phone && !d.phone) patch.phone = info.phone;
+      if (info.email && !d.email) patch.email = info.email;
+      if (info.address && !d.address) patch.address = info.address;
+      await updateDispute(d.id, patch);
+      toast("Re-fetched");
+    };
+
+    // Links
+    if (action === "edit-link-label") el.onchange = () => {
+      const i = parseInt(el.closest("[data-link-idx]").dataset.linkIdx);
+      const links = [...(d.links || [])]; links[i] = { ...links[i], label: el.value };
+      updateDispute(d.id, { links });
+    };
+    if (action === "edit-link-url") el.onchange = () => {
+      const i = parseInt(el.closest("[data-link-idx]").dataset.linkIdx);
+      const links = [...(d.links || [])]; links[i] = { ...links[i], url: el.value };
+      updateDispute(d.id, { links });
+    };
+    if (action === "del-link") el.onclick = () => {
+      const i = parseInt(el.closest("[data-link-idx]").dataset.linkIdx);
+      updateDispute(d.id, { links: (d.links || []).filter((_, idx) => idx !== i) });
+    };
+    if (action === "add-link") el.onclick = () => updateDispute(d.id, { links: [...(d.links || []), { label: "", url: "" }] });
+
+    // Files
+    if (action === "edit-file-name") el.onchange = () => {
+      const i = parseInt(el.closest("[data-file-idx]").dataset.fileIdx);
+      const files = [...(d.files || [])]; files[i] = { ...files[i], name: el.value };
+      updateDispute(d.id, { files });
+    };
+    if (action === "edit-file-url") el.onchange = () => {
+      const i = parseInt(el.closest("[data-file-idx]").dataset.fileIdx);
+      const files = [...(d.files || [])]; files[i] = { ...files[i], url: el.value };
+      updateDispute(d.id, { files });
+    };
+    if (action === "del-file") el.onclick = () => {
+      const i = parseInt(el.closest("[data-file-idx]").dataset.fileIdx);
+      updateDispute(d.id, { files: (d.files || []).filter((_, idx) => idx !== i) });
+    };
+    if (action === "add-file") el.onclick = () => updateDispute(d.id, { files: [...(d.files || []), { name: "", url: "" }] });
+  });
+}
+
+function renderCreditSettings() {
+  const root = $("#credit-settings-view");
+  const total = disputes.length;
+  const byStatus = DISPUTE_STATUSES.map(s => ({ s, n: disputes.filter(d => d.status === s).length }));
+  const byBureau = BUREAUS.map(b => ({ b, n: disputes.filter(d => d.bureau === b).length }));
+  root.innerHTML = `
+    <div class="settings-section">
+      <h2>Dispute Stats</h2>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--text-dim)">
+        <span>Total: <strong style="color:var(--text)">${total}</strong></span>
+        ${byBureau.map(x => `<span><span class="bureau-chip bureau-${x.b.toLowerCase()}">${x.b}</span> ${x.n}</span>`).join(" ")}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        ${byStatus.map(x => `<span class="status-badge ${statusClass(x.s)}">${x.s}: ${x.n}</span>`).join(" ")}
+      </div>
+    </div>
+    <div class="settings-section">
+      <h2>How GSD-Credit works</h2>
+      <p style="margin:0;color:var(--text-dim);font-size:13px;line-height:1.6">
+        Type your current FICO scores in the boxes up top — they auto-save as you change them and color-code by band (Poor / Fair / Good / Very Good / Excellent).<br><br>
+        Paste an <code style="background:var(--panel-2);padding:1px 5px;border-radius:3px">obsidian://</code> link to your credit reports in Obsidian.<br><br>
+        Add a dispute by pasting the creditor's URL — logo and contact info are auto-pulled. Walk it through the status flow: Draft → Mailed → Responded → Resolved / Rejected / Re-disputed / Escalated. Marking <em>Mailed</em> or <em>Responded</em> auto-stamps today's date if it's not set yet.
+      </p>
+    </div>
+  `;
+}
+
 // ----- Tabs + quick add + mode switcher -----
 
 // To-Do tabs (scoped to #tabs only — NOT #bill-tabs)
@@ -1685,6 +2282,34 @@ $("#qa-title").onkeydown = (e) => { if (e.key === "Enter") $("#qa-add").click();
 
 $("#bill-qa-add").onclick = () => { addBillFromInput($("#bill-qa-url").value); $("#bill-qa-url").value = ""; };
 $("#bill-qa-url").onkeydown = (e) => { if (e.key === "Enter") $("#bill-qa-add").click(); };
+
+// Credit bureau tabs
+$("#credit-bureau-tabs").querySelectorAll("button").forEach(btn => {
+  btn.onclick = () => {
+    $("#credit-bureau-tabs").querySelectorAll("button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentBureauFilter = btn.dataset.bureau;
+    expandedDisputeId = null;
+    render();
+  };
+});
+
+// Status filter
+$("#status-filter").onchange = () => {
+  currentStatusFilter = $("#status-filter").value;
+  expandedDisputeId = null;
+  render();
+};
+
+// Dispute quick add
+$("#dispute-qa-add").onclick = () => { addDisputeFromInput($("#dispute-qa-input").value); $("#dispute-qa-input").value = ""; };
+$("#dispute-qa-input").onkeydown = (e) => { if (e.key === "Enter") $("#dispute-qa-add").click(); };
+
+// Add credit report
+$("#add-report-btn").onclick = () => {
+  const reports = (creditScores && creditScores.reports) || [];
+  setReports([...reports, { name: "", url: "" }]);
+};
 
 // Initial render (empty state until data arrives)
 render();
