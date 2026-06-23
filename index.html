@@ -6,10 +6,10 @@
 <meta name="theme-color" content="#0b0d12" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="To-Do" />
+<meta name="apple-mobile-web-app-title" content="GSD" />
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icon-192.png" />
-<title>To-Do List</title>
+<title>GSD — Get Shi*t Done</title>
 <style>
   :root {
     --bg-grad-start: #0b0d12;
@@ -59,10 +59,17 @@
     gap: 12px; margin-bottom: 14px;
   }
   h1 {
-    margin: 0; font-size: 24px; letter-spacing: -0.01em;
+    margin: 0; font-size: 26px; letter-spacing: -0.02em; font-weight: 900;
     background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
     -webkit-background-clip: text; background-clip: text; color: transparent;
+    line-height: 1;
   }
+  .app-title-wrap { display: flex; flex-direction: column; gap: 2px; }
+  .tagline {
+    font-size: 11px; color: var(--text-faint); letter-spacing: 0.08em;
+    text-transform: uppercase; font-weight: 600;
+  }
+  .mode-label { font-size: 14px; color: var(--text-dim); font-weight: 500; }
   .sync-status {
     display: flex; align-items: center; gap: 6px;
     font-size: 11px; color: var(--text-dim);
@@ -442,7 +449,10 @@
 <body>
 <div class="container">
   <header class="app-header">
-    <h1 id="app-title">📋 To-Do List</h1>
+    <div class="app-title-wrap">
+      <h1 id="app-title">GSD</h1>
+      <span class="tagline" id="app-tagline">Get Shi*t Done · To-Do</span>
+    </div>
     <div class="sync-status">
       <span class="sync-dot" id="sync-dot"></span>
       <span id="sync-text">connecting…</span>
@@ -455,8 +465,8 @@
   </div>
 
   <div class="mode-switch" id="mode-switch">
-    <button class="mode-btn active" data-mode="todo">📋 To-Do</button>
-    <button class="mode-btn" data-mode="bills">💵 To-Pay</button>
+    <button class="mode-btn active" data-mode="todo">📋 GSD-Do <span style="opacity:.65;font-weight:500">· To-Do</span></button>
+    <button class="mode-btn" data-mode="bills">💵 GSD-Pay <span style="opacity:.65;font-weight:500">· To-Pay</span></button>
   </div>
 
   <!-- ===== TO-DO MODE ===== -->
@@ -749,13 +759,15 @@ function render() {
   if (mode === "bills") {
     $("#todo-mode").style.display = "none";
     $("#bills-mode").style.display = "block";
-    $("#app-title").textContent = "💵 To-Pay List";
+    $("#app-title").textContent = "GSD";
+    $("#app-tagline").textContent = "Get Shi*t Done · Pay";
     renderBillsView();
     return;
   }
   $("#todo-mode").style.display = "block";
   $("#bills-mode").style.display = "none";
-  $("#app-title").textContent = "📋 To-Do List";
+  $("#app-title").textContent = "GSD";
+  $("#app-tagline").textContent = "Get Shi*t Done · To-Do";
   if (currentFilter === "settings") {
     $("#task-list").style.display = "none";
     $("#quick-add").style.display = "none";

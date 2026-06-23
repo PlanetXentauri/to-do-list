@@ -4,22 +4,44 @@
       <stop offset="0%" stop-color="#0b0d12"/>
       <stop offset="100%" stop-color="#1c2030"/>
     </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#8b5cf6"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="bolt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
     </linearGradient>
   </defs>
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <rect x="110" y="120" width="292" height="282" rx="24" fill="#161922" stroke="url(#accent)" stroke-width="6"/>
-  <rect x="130" y="100" width="60" height="40" rx="10" fill="url(#accent)"/>
-  <rect x="220" y="100" width="60" height="40" rx="10" fill="url(#accent)"/>
-  <rect x="310" y="100" width="60" height="40" rx="10" fill="url(#accent)"/>
-  <g stroke="#e8eaf0" stroke-width="10" stroke-linecap="round" fill="none">
-    <path d="M150 190 l25 25 l45 -55"/>
-    <line x1="240" y1="200" x2="370" y2="200"/>
-    <path d="M150 270 l25 25 l45 -55"/>
-    <line x1="240" y1="280" x2="370" y2="280"/>
-    <circle cx="165" cy="350" r="14" stroke="#8b91a3" stroke-width="6"/>
-    <line x1="240" y1="350" x2="370" y2="350" stroke="#8b91a3"/>
+  <!-- Background plate -->
+  <rect width="512" height="512" rx="100" fill="url(#bg)"/>
+  <!-- Subtle accent ring -->
+  <rect x="14" y="14" width="484" height="484" rx="92" fill="none" stroke="url(#grad)" stroke-width="3" opacity="0.35"/>
+
+  <!-- Lightning bolt watermark behind the letters -->
+  <path d="M275 60 L165 290 L240 290 L195 452 L350 200 L265 200 Z"
+        fill="url(#bolt)" opacity="0.10"/>
+
+  <!-- G — partial circle with horizontal arm -->
+  <g stroke="url(#grad)" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M150 200 A 80 80 0 1 0 150 320 L 218 320 L 218 270"/>
+  </g>
+
+  <!-- S — stylized -->
+  <g stroke="url(#grad)" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M310 188 Q 245 188 245 232 Q 245 260 290 260 Q 335 260 335 296 Q 335 340 270 340"/>
+  </g>
+
+  <!-- D — vertical bar + arc -->
+  <g stroke="url(#grad)" stroke-width="46" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="378" y1="190" x2="378" y2="338"/>
+    <path d="M378 188 Q 446 188 446 264 Q 446 340 378 340"/>
+  </g>
+
+  <!-- Tiny check accent in the corner -->
+  <g transform="translate(390 400)">
+    <circle r="36" fill="url(#grad)"/>
+    <path d="M -14 0 L -4 12 L 16 -10" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 </svg>
