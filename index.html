@@ -456,9 +456,11 @@
   .score-band.band-very-good { color: #84cc16; }
   .score-band.band-excellent { color: #22c55e; }
   .scores-subtitle {
-    font-size: 11px; color: var(--text-faint); margin: 8px 0 0;
-    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
-    grid-column: 1 / -1;
+    font-size: 13px; color: var(--text-dim); margin: 14px 0 4px;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 6px;
+    padding: 8px 12px; background: var(--panel-2); border-radius: 8px;
+    border: 1px solid var(--panel-border);
   }
   @media (max-width: 540px) {
     .scores-grid { grid-template-columns: 1fr; }
@@ -1971,10 +1973,10 @@ function renderScores() {
     ${cell("Experian", "experianFico", "FICO 8 / base")}
     ${cell("TransUnion", "transunionFico", "FICO 8 / base")}
     ${cell("Equifax", "equifaxFico", "FICO 8 / base")}
-    <div class="scores-subtitle">FICO Auto Score</div>
-    ${cell("Experian", "experianAuto", "FICO Auto 8")}
-    ${cell("TransUnion", "transunionAuto", "FICO Auto 8")}
-    ${cell("Equifax", "equifaxAuto", "FICO Auto 8")}
+    <div class="scores-subtitle">🚗 FICO Auto Score</div>
+    ${cell("Experian", "experianAuto", "🚗 FICO Auto 8")}
+    ${cell("TransUnion", "transunionAuto", "🚗 FICO Auto 8")}
+    ${cell("Equifax", "equifaxAuto", "🚗 FICO Auto 8")}
   `;
   grid.innerHTML = html;
   if (data.updatedAt && data.updatedAt.toDate) {
